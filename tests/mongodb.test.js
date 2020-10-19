@@ -34,6 +34,7 @@ describe('MongoDB', () => {
         // using a hidden property of the class
         // @ts-ignore
         await db.db.collection('dataSources').remove({});
+        await db.close();
     });
 
     it('should bootstrap MongoDB connection amd disconnect', async () => {
@@ -41,14 +42,16 @@ describe('MongoDB', () => {
         expect(db.isConnected).to.be.true;
         await db.close();
         expect(db.isConnected).to.be.false;
+        await db.close();
     });
 
-    it.only('should create and fetch a datasource', async () => {
+    it('should create and fetch a datasource', async () => {
         const db = await getDb();
         const name = 'my-dataSource';
         db.dataSources.create(name);
         const dataSource = await db.dataSources.fetch({ name });
         expect(dataSource.name).to.equal(name);
         expect(dataSource.id).to.be.string;
+        await db.close();
     });
 });
