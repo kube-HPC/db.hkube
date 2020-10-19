@@ -1,6 +1,7 @@
 import { Id } from './types';
 
 export type Algorithm = {
+    id?: Id;
     name: string;
 };
 

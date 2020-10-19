@@ -1,8 +1,8 @@
-import { PipelinesInterface } from './Pipeline.d';
-import { DataSourcesInterface } from './DataSource.d';
+import { PipelinesInterface } from './Pipeline';
+import { DataSourcesInterface } from './DataSource';
 import { AlgorithmsInterface } from './MongoDB/Algorithms';
 
-export interface DBInterface {
+export interface ProviderInterface {
     init(): Promise<void>;
     close(force?: boolean): Promise<void>;
     isConnected: boolean;

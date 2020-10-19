@@ -1,8 +1,7 @@
 import { Id } from './types';
 
 export type Pipeline = {
-    _id: Id;
-    id: Id;
+    id?: Id;
     name: string;
 };
 

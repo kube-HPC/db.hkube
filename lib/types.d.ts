@@ -11,4 +11,4 @@ export type Config = {
     MongoDB?: MongoConfig;
 };
 
-export type Provider = 'MongoDB';
+export type ProviderName = 'MongoDB';

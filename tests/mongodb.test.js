@@ -2,14 +2,13 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.test') });
 const { expect } = require('chai');
 const DB = require('./../');
-const { PassThrough } = require('stream');
 
 /**
  * @typedef {import('mongodb').MongoClientOptions} MongoClientOptions
- * @typedef {import('../lib/MongoDB').DBInterface} DBInterface
+ * @typedef {import('../lib/MongoDB').ProviderInterface} ProviderInterface
  */
 
-/** @type {(config?: MongoClientOptions) => Promise<DBInterface>} */
+/** @type {(config?: MongoClientOptions) => Promise<ProviderInterface>} */
 const getDb = async (config = {}) => {
     const db = DB('MongoDB', {
         MongoDB: {
