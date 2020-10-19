@@ -49,11 +49,13 @@ describe('MongoDB', () => {
     it('should create and fetch and delete a datasource', async () => {
         const db = await connect();
         const name = uuid.v4();
-        const createEntry = await db.dataSources.create(name);
-        expect(createEntry).to.be.string;
+        const insertedId = await db.dataSources.create(name);
+        expect(insertedId).to.be.string;
         const dataSource = await db.dataSources.fetch({ name });
         expect(dataSource.name).to.equal(name);
         expect(dataSource.id).to.be.string;
+        const fetchedById = await db.dataSources.fetch({ id: insertedId });
+        expect(fetchedById).to.eql(dataSource);
         const deletedId = await db.dataSources.delete(dataSource.id);
         expect(deletedId).to.eq(dataSource.id);
     });
@@ -71,6 +73,8 @@ describe('MongoDB', () => {
 
     it('should throw an error if no id or name is passed to fetch', async () => {
         const db = await connect();
+        // @ts-ignore
+        await expect(db.dataSources.fetch()).to.be.rejected;
         await expect(db.dataSources.fetch({})).to.be.rejected;
     });
 
