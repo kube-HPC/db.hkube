@@ -10,5 +10,4 @@ export interface PipelinesInterface {
     delete(id: Id): Promise<Id>;
     fetch(params: { id?: Id; name?: string }): Promise<Pipeline>;
     fetchAll(): Promise<Pipeline[]>;
-    edit(params: any): Promise<Pipeline>;
 }

@@ -10,5 +10,4 @@ export interface AlgorithmsInterface {
     delete(Id: Id): Promise<Id>;
     fetch(params: { id?: Id; name?: string }): Promise<Algorithm>;
     fetchAll(): Promise<Algorithm[]>;
-    edit(params: any): Promise<Algorithm>;
 }

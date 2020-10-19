@@ -29,6 +29,7 @@ mongo <<EOF
     //rs.reconfig(cfg, { force: true });
     rs.status();
 EOF
+echo "waiting 15 seconds for leader election..."
 sleep 15
 
 mongo <<EOF
@@ -36,7 +37,7 @@ mongo <<EOF
     db.createUser({
         user: "admin",
         pwd: "password",
-        roles: [ { role: "useradminanydatabase", db: "admin" } ]
+        roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
     });
 EOF
 mongo -u admin -p password <<EOF

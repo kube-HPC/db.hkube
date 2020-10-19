@@ -10,5 +10,4 @@ export interface DataSourcesInterface {
     delete(id: Id): Promise<Id>;
     fetch(params: { id?: Id; name?: string }): Promise<DataSource>;
     fetchAll(): Promise<DataSource[]>;
-    edit(params: any): Promise<DataSource>;
 }

@@ -1,5 +1,6 @@
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.test') });
+const uuid = require('uuid');
 const { expect } = require('chai');
 const DB = require('./../');
 
@@ -8,8 +9,11 @@ const DB = require('./../');
  * @typedef {import('../lib/MongoDB').ProviderInterface} ProviderInterface
  */
 
-/** @type {(config?: MongoClientOptions) => Promise<ProviderInterface>} */
-const getDb = async (config = {}) => {
+/** @type {ProviderInterface[]} */
+const openConnections = []; // holds all the connections "connect" has created to disconnect after testing is done
+
+/** @param {MongoClientOptions} config */
+const connect = async (config = {}) => {
     const db = DB('MongoDB', {
         MongoDB: {
             auth: {
@@ -24,33 +28,61 @@ const getDb = async (config = {}) => {
         },
     });
     await db.init();
+    openConnections.push(db);
     return db;
 };
 
 describe('MongoDB', () => {
-    afterEach(async () => {
-        const db = await getDb();
-        // using a hidden property of the class
-        // @ts-ignore
-        await db.db.collection('dataSources').remove({});
-        await db.close();
+    after(async () => {
+        await Promise.all(
+            openConnections.map(connection => connection.close())
+        );
     });
 
     it('should bootstrap MongoDB connection amd disconnect', async () => {
-        const db = await getDb();
+        const db = await connect();
         expect(db.isConnected).to.be.true;
         await db.close();
         expect(db.isConnected).to.be.false;
-        await db.close();
     });
 
-    it('should create and fetch a datasource', async () => {
-        const db = await getDb();
-        const name = 'my-dataSource';
-        db.dataSources.create(name);
+    it('should create and fetch and delete a datasource', async () => {
+        const db = await connect();
+        const name = uuid.v4();
+        const createEntry = await db.dataSources.create(name);
+        expect(createEntry).to.be.string;
         const dataSource = await db.dataSources.fetch({ name });
         expect(dataSource.name).to.equal(name);
         expect(dataSource.id).to.be.string;
-        await db.close();
+        const deletedId = await db.dataSources.delete(dataSource.id);
+        expect(deletedId).to.eq(dataSource.id);
+    });
+
+    it('should fetch all the dataSources', async () => {
+        const db = await connect();
+        const names = new Array(5).fill(0).map(() => uuid.v4());
+        await Promise.all(names.map(db.dataSources.create));
+        const dataSources = await db.dataSources.fetchAll();
+        names.forEach(name => {
+            const entry = dataSources.find(item => item.name === name);
+            expect(entry.id).to.be.string;
+        });
+    });
+
+    it('should throw an error if no id or name is passed to fetch', async () => {
+        const db = await connect();
+        await expect(db.dataSources.fetch({})).to.be.rejected;
+    });
+
+    it('should throw an error if no id passed to delete', async () => {
+        const db = await connect();
+        await expect(db.dataSources.delete('')).to.be.rejected;
+    });
+
+    it('should return null if deleting a non existing entry', async () => {
+        const db = await connect();
+        await expect(db.dataSources.delete('non-existing')).to.eventually.eq(
+            null
+        );
     });
 });
