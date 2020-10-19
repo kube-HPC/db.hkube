@@ -1,0 +1,37 @@
+{
+    "name": "@hkube/db",
+    "version": "1.0.0",
+    "description": "db api",
+    "main": "index.js",
+    "scripts": {
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "pretest": "npm run lint",
+        "start:compose": "docker-compose up -d && sleep 5 && ./scripts/startReplicas.sh",
+        "test": "NODE_ENV=test ./node_modules/mocha/bin/_mocha tests --colors --recursive --exit",
+        "test:cov": "NODE_ENV=test ./node_modules/nyc/bin/nyc.js --reporter=html --reporter=text --reporter=lcov npm run test",
+        "coverage": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+        "build": "npm publish"
+    },
+    "author": "Reggev Amsalem",
+    "license": "ISC",
+    "dependencies": {
+        "mongodb": "^3.6.2"
+    },
+    "devDependencies": {
+        "chai": "^4.2.0",
+        "coveralls": "^3.1.0",
+        "eslint": "^6.8.0",
+        "eslint-config-airbnb": "^18.2.0",
+        "eslint-config-airbnb-base": "^14.1.0",
+        "eslint-config-prettier": "^6.13.0",
+        "eslint-plugin-chai-friendly": "^0.6.0",
+        "eslint-plugin-import": "^2.22.1",
+        "eslint-plugin-jsdoc": "^30.6.5",
+        "eslint-plugin-prettier": "^3.1.4",
+        "mocha": "^8.0.1",
+        "nyc": "^14.1.1",
+        "prettier": "^2.1.2",
+        "prettier-plugin-jsdoc": "^0.2.0"
+    }
+}
