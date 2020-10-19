@@ -2,6 +2,7 @@
 
 # NOTE: the initial user HAS to be created on a primary node using localhost!
 # mongo-0.mongo has a higher priority so it'll be the primary on initial boot
+
 mongo <<EOF
    var cfg = {
         "_id": "rs",
@@ -28,17 +29,22 @@ mongo <<EOF
     //rs.reconfig(cfg, { force: true });
     rs.status();
 EOF
-sleep 10
+sleep 15
 
 mongo <<EOF
-   use admin;
-   admin = db.getSiblingDB("admin");
-   admin.createUser(
-     {
+    use admin;
+    db.createUser({
         user: "admin",
         pwd: "password",
-        roles: [ { role: "root", db: "admin" } ]
-     });
-     db.getSiblingDB("admin").auth("admin", "password");
-     rs.status();
+        roles: [ { role: "useradminanydatabase", db: "admin" } ]
+    });
+EOF
+mongo -u admin -p password <<EOF
+    db.getSiblingDB('tests');
+    use admin
+    db.createUser({
+        user: "tester",
+        pwd: "password",
+        roles: [ { role: "dbOwner", db: "tests" } ]
+    });
 EOF
