@@ -1,13 +1,13 @@
+import { MongoClientOptions } from 'mongodb';
 export type Id = string;
 
+export type MongoConfig = {
+    host: string;
+    port: number;
+} & MongoClientOptions;
+
 export type Config = {
-    MongoDB?: {
-        host: string;
-        port: number;
-        userName: string;
-        userPassword: string;
-        ssl: boolean;
-    };
+    MongoDB?: MongoConfig;
 };
 
 export type Provider = 'MongoDB';
