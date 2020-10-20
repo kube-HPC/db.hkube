@@ -2,9 +2,13 @@ sudo: required
 language: node_js
 node_js:
     - '14'
+services:
+    - docker
 branches:
     only:
         - main
+before_install:
+    - docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=tester -e MONGO_INITDB_ROOT_PASSWORD=password mongo:4.4.1-bionic
 install:
     - npm install
 cache:
