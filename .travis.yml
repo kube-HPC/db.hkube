@@ -4,7 +4,7 @@ node_js:
     - '14'
 branches:
     only:
-        - master
+        - main
 install:
     - npm install
 cache:
@@ -15,21 +15,21 @@ script:
 after_script: 'npm run coverage'
 after_success:
     - |
-        if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+        if ([ "$TRAVIS_BRANCH" == "main" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
           git config --global user.email "travis@travis-ci.org"
           git config --global user.name "Travis CI"
           git remote set-url --push origin "https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git"
           git remote -v
           git checkout -f -b version-branch
           npm version patch -m "$(git log -1 --pretty=%B) .... bump version [skip ci]"
-          git push origin version-branch:master --follow-tags
+          git push origin version-branch:main --follow-tags
         else
           echo "version skipped!"
         fi
 deploy:
     skip_cleanup: true
     provider: npm
-    email: 'nassi9@gmail.com'
+    email: 'reggev.am@gmail.com'
     api_key: $NPM_AUTH_TOKEN
     on:
-        branch: master
+        branch: main
