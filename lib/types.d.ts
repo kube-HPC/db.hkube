@@ -8,7 +8,7 @@ export type MongoConfig = {
 } & MongoClientOptions;
 
 export type Config = {
-    MongoDB?: MongoConfig;
+    mongo?: MongoConfig;
 };
 
-export type ProviderName = 'MongoDB';
+export type ProviderName = 'mongo';

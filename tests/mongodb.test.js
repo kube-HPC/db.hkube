@@ -2,7 +2,7 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.test') });
 const uuid = require('uuid');
 const { expect } = require('chai');
-const DB = require('./../');
+const DBConnection = require('./../');
 
 /**
  * @typedef {import('mongodb').MongoClientOptions} MongoClientOptions
@@ -13,20 +13,23 @@ const DB = require('./../');
 const openConnections = []; // holds all the connections "connect" has created to disconnect after testing is done
 
 /** @param {MongoClientOptions} config */
-const connect = async (config = {}) => {
-    const db = DB('MongoDB', {
-        MongoDB: {
-            auth: {
-                user: process.env.DB_USER_NAME,
-                password: process.env.DB_PASSWORD,
+const connect = async (config = {}, provider = undefined) => {
+    const db = DBConnection(
+        {
+            mongo: {
+                auth: {
+                    user: process.env.DB_USER_NAME,
+                    password: process.env.DB_PASSWORD,
+                },
+                host: process.env.DB_HOST,
+                port: parseInt(process.env.DB_PORT, 10),
+                dbName: process.env.DB_NAME,
+                useUnifiedTopology: true,
+                ...config,
             },
-            host: process.env.DB_HOST,
-            port: parseInt(process.env.DB_PORT, 10),
-            dbName: process.env.DB_NAME,
-            useUnifiedTopology: true,
-            ...config,
         },
-    });
+        provider
+    );
     await db.init();
     openConnections.push(db);
     return db;
@@ -73,7 +76,7 @@ describe('MongoDB', () => {
 
     it('should throw an error if no id or name is passed to fetch', async () => {
         const db = await connect();
-        // @ts-ignore
+        // @ts-expect-error
         await expect(db.dataSources.fetch()).to.be.rejected;
         await expect(db.dataSources.fetch({})).to.be.rejected;
     });
@@ -88,5 +91,17 @@ describe('MongoDB', () => {
         await expect(db.dataSources.delete('non-existing')).to.eventually.eq(
             null
         );
+    });
+
+    it('should throw invalid provider error', () => {
+        // @ts-expect-error
+        expect(() => DBConnection({}, 'invalid-provider')).to.throw(
+            /invalid provider/i
+        );
+    });
+
+    it('should throw invalid config error', () => {
+        // @ts-expect-error
+        expect(() => DBConnection({ invalid: '' })).to.throw(/invalid config/i);
     });
 });

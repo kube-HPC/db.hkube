@@ -6,14 +6,24 @@ const MongoDB = require('./lib/MongoDB');
  */
 
 const providers = {
-    MongoDB,
+    mongo: MongoDB,
 };
 
-/** @type {(provider: ProviderName, config: Config) => ProviderInterface} */
-const DB = (provider = 'MongoDB', config) => {
-    const providerConfig = config[provider];
+/** @type {(config: Config, provider?: ProviderName) => ProviderInterface} */
+const DBConnection = (config, provider = 'mongo') => {
     const DBProvider = providers[provider];
+    if (!DBProvider) {
+        throw new Error(
+            `invalid provider name, ${provider}, available options are ${Object.keys(
+                providers
+            ).join(', ')}`
+        );
+    }
+    const providerConfig = config[provider];
+    if (!providerConfig) {
+        throw new Error(`invalid config fro provider ${provider}`);
+    }
     return new DBProvider(providerConfig);
 };
 
-module.exports = DB;
+module.exports = DBConnection;
