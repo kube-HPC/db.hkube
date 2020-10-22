@@ -3,45 +3,9 @@ require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.test') });
 const uuid = require('uuid');
 const { expect } = require('chai');
 const DBConnection = require('./../');
-
-/**
- * @typedef {import('mongodb').MongoClientOptions} MongoClientOptions
- * @typedef {import('../lib/MongoDB').ProviderInterface} ProviderInterface
- */
-
-/** @type {ProviderInterface[]} */
-const openConnections = []; // holds all the connections "connect" has created to disconnect after testing is done
-
-/** @param {MongoClientOptions} config */
-const connect = async (config = {}, provider = undefined) => {
-    const db = DBConnection(
-        {
-            mongo: {
-                auth: {
-                    user: process.env.DB_USER_NAME,
-                    password: process.env.DB_PASSWORD,
-                },
-                host: process.env.DB_HOST,
-                port: parseInt(process.env.DB_PORT, 10),
-                dbName: process.env.DB_NAME,
-                useUnifiedTopology: true,
-                ...config,
-            },
-        },
-        provider
-    );
-    await db.init();
-    openConnections.push(db);
-    return db;
-};
+const connect = require('./connect');
 
 describe('MongoDB', () => {
-    after(async () => {
-        await Promise.all(
-            openConnections.map(connection => connection.close())
-        );
-    });
-
     it('should bootstrap MongoDB connection amd disconnect', async () => {
         const db = await connect();
         expect(db.isConnected).to.be.true;
@@ -52,7 +16,7 @@ describe('MongoDB', () => {
     it('should create and fetch and delete a datasource', async () => {
         const db = await connect();
         const name = uuid.v4();
-        const insertedId = await db.dataSources.create(name);
+        const { id: insertedId } = await db.dataSources.create(name);
         expect(insertedId).to.be.string;
         const dataSource = await db.dataSources.fetch({ name });
         expect(dataSource.name).to.equal(name);

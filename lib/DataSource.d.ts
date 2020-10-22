@@ -6,7 +6,8 @@ export type DataSource = {
 };
 
 export interface DataSourcesInterface {
-    create(name: string): Promise<Id>;
+    init(): void;
+    create(name: string): Promise<DataSource>;
     delete(id: Id): Promise<Id>;
     fetch(params: { id?: Id; name?: string }): Promise<DataSource>;
     fetchAll(): Promise<DataSource[]>;

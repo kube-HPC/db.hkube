@@ -29,7 +29,7 @@ module.exports = {
         'no-var': 'error',
         // "import/newline-after-import": "off",
         'max-len': ['error', 200],
-        'brace-style': ['error', 'stroustrup'],
+        'brace-style': ['error', '1tbs'],
         indent: ['warn', 4, { SwitchCase: 1 }],
         'comma-dangle': 'off',
         'no-underscore-dangle': 'off',
