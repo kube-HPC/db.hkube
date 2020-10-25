@@ -4,6 +4,9 @@ const uuid = require('uuid');
 const { expect } = require('chai');
 const DBConnection = require('./../');
 const connect = require('./connect');
+const { ObjectID } = require('mongodb');
+// a valid mongo ObjectID;
+const nonExistingId = new ObjectID().toHexString();
 
 describe('MongoDB', () => {
     it('should bootstrap MongoDB connection amd disconnect', async () => {
@@ -47,14 +50,44 @@ describe('MongoDB', () => {
 
     it('should throw an error if no id passed to delete', async () => {
         const db = await connect();
-        await expect(db.dataSources.delete('')).to.be.rejected;
+        await expect(db.dataSources.delete('')).to.be.rejectedWith(
+            /did not provide id/i
+        );
     });
 
-    it('should return null if deleting a non existing entry', async () => {
+    it('should throw an error if both id and name are passed to fetch', async () => {
         const db = await connect();
-        await expect(db.dataSources.delete('non-existing')).to.eventually.eq(
-            null
+        await expect(
+            db.dataSources.fetch({ name: 'name', id: '123' })
+        ).to.be.rejectedWith(/only one of/i);
+    });
+
+    it('should throw an error invalid id passed to fetch', async () => {
+        const db = await connect();
+        await expect(
+            db.dataSources.fetch({ id: 'not an id' })
+        ).to.be.rejectedWith(/invalid id/i);
+    });
+
+    it('should throw an error invalid id passed to delete', async () => {
+        const db = await connect();
+        await expect(db.dataSources.delete('not an id')).to.be.rejectedWith(
+            /invalid id/i
         );
+    });
+
+    it('should throw not found error if deleting a non existing id', async () => {
+        const db = await connect();
+        await expect(db.dataSources.delete(nonExistingId)).to.be.rejectedWith(
+            /could not find/i
+        );
+    });
+
+    it('should throw not found error if fetching a non existing id', async () => {
+        const db = await connect();
+        await expect(
+            db.dataSources.fetch({ id: nonExistingId })
+        ).to.be.rejectedWith(/could not find/i);
     });
 
     it('should throw invalid provider error', () => {
