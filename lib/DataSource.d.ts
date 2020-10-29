@@ -9,7 +9,7 @@ export interface DataSourcesInterface {
     init(): void;
     create(name: string): Promise<DataSource>;
     delete(
-        name: string,
+        props: { name?: string; id?: string },
         options?: { allowNotFound?: boolean }
     ): Promise<Id | null>;
     fetch(params: { id?: Id; name?: string }): Promise<DataSource>;
