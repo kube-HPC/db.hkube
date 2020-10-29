@@ -23,6 +23,18 @@ describe('MongoDB', () => {
                 /invalid config/i
             );
         });
+        it('should throw missing user name', async () => {
+            await expect(
+                // @ts-expect-error
+                connect({ auth: { password: 'a' } })
+            ).to.be.rejectedWith(/you did not provide user/i);
+        });
+        it('should throw missing password', async () => {
+            // @ts-expect-error
+            await expect(connect({ auth: { user: 'a' } })).to.be.rejectedWith(
+                /you did not provide password/i
+            );
+        });
         it('should bootstrap MongoDB connection amd disconnect', async () => {
             const db = await connect();
             expect(db.isConnected).to.be.true;
@@ -58,21 +70,21 @@ describe('MongoDB', () => {
     describe('delete', () => {
         it('should throw an error if both id and name are provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.delete({ name: 'joe', id: 'some id' })).to.be.rejectedWith(
-                /only one of | id/i
-            );
+            await expect(
+                db.dataSources.delete({ name: 'joe', id: 'some id' })
+            ).to.be.rejectedWith(/only one of | id/i);
         });
         it('should throw an error if no id provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.delete({ id: undefined })).to.be.rejectedWith(
-                /you did not provide name | id/i
-            );
+            await expect(
+                db.dataSources.delete({ id: undefined })
+            ).to.be.rejectedWith(/you did not provide name | id/i);
         });
         it('should throw an error invalid id provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.delete({ id: 'not an id' })).to.be.rejectedWith(
-                /invalid id/i
-            );
+            await expect(
+                db.dataSources.delete({ id: 'not an id' })
+            ).to.be.rejectedWith(/invalid id/i);
         });
         it('should throw not found error if on non existing id', async () => {
             const db = await connect();
@@ -83,7 +95,10 @@ describe('MongoDB', () => {
         it('should return null for non existing id if allowNotFound', async () => {
             const db = await connect();
             await expect(
-                db.dataSources.delete({ id: nonExistingId }, { allowNotFound: true })
+                db.dataSources.delete(
+                    { id: nonExistingId },
+                    { allowNotFound: true }
+                )
             ).to.eventually.eq(null);
         });
     });

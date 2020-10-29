@@ -21,7 +21,7 @@ const DBConnection = (config, provider = 'mongo') => {
     }
     const providerConfig = config[provider];
     if (!providerConfig) {
-        throw new Error(`invalid config fro provider ${provider}`);
+        throw new Error(`invalid config for provider ${provider}`);
     }
     return new DBProvider(providerConfig);
 };
