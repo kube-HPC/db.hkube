@@ -14,4 +14,5 @@ export interface DataSourcesInterface {
     ): Promise<Id | null>;
     fetch(params: { id?: Id; name?: string }): Promise<DataSource>;
     fetchAll(): Promise<DataSource[]>;
+    fetchMany(params: { ids?: Id[]; names?: string[] }): Promise<DataSource[]>;
 }

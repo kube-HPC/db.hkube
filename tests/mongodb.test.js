@@ -5,6 +5,7 @@ const { expect } = require('chai');
 const DBConnection = require('./../');
 const connect = require('./connect');
 const { ObjectID } = require('mongodb');
+const { itemNotFound } = require('../lib/errors');
 // a valid mongo ObjectID;
 const nonExistingId = new ObjectID().toHexString();
 
@@ -136,6 +137,21 @@ describe('MongoDB', () => {
             await expect(
                 db.dataSources.fetch({ id: nonExistingId })
             ).to.be.rejectedWith(/could not find/i);
+        });
+        it('should fetch many by id', async () => {
+            const db = await connect();
+            const names = new Array(5).fill(0).map(() => uuid.v4());
+            const created = await Promise.all(names.map(db.dataSources.create));
+            const ids = created.map(entry => entry.id);
+            const response = await db.dataSources.fetchMany({ ids });
+            expect(response).to.have.lengthOf(5);
+        });
+        it('should fetch many by name', async () => {
+            const db = await connect();
+            const names = new Array(5).fill(0).map(() => uuid.v4());
+            await Promise.all(names.map(db.dataSources.create));
+            const response = await db.dataSources.fetchMany({ names });
+            expect(response).to.have.lengthOf(5);
         });
     });
 });
