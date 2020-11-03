@@ -153,5 +153,11 @@ describe('MongoDB', () => {
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
+        it('should throw missing parameters', async () => {
+            const db = await connect();
+            await expect(db.dataSources.fetchMany({})).to.be.rejectedWith(
+                /you did not provide names | ids/i
+            );
+        });
     });
 });
