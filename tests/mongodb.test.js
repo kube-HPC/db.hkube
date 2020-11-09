@@ -111,6 +111,8 @@ describe('MongoDB', () => {
             const dataSources = await db.dataSources.fetchAll();
             names.forEach(name => {
                 const entry = dataSources.find(item => item.name === name);
+                expect(entry).not.to.have.property('_id');
+                expect(entry).to.have.property('id');
                 expect(entry.id).to.be.string;
             });
         });
