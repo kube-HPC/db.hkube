@@ -5,9 +5,18 @@ const { expect } = require('chai');
 const DBConnection = require('./../');
 const connect = require('./connect');
 const { ObjectID } = require('mongodb');
-const { itemNotFound } = require('../lib/errors');
+
 // a valid mongo ObjectID;
 const nonExistingId = new ObjectID().toHexString();
+const { dummyFile } = require('./mocks');
+
+const generateEntries = amount => {
+    const names = new Array(amount).fill(0).map(() => uuid.v4());
+    return {
+        names,
+        entries: names.map(name => ({ name, files: [dummyFile] })),
+    };
+};
 
 describe('MongoDB', () => {
     describe('setup', () => {
@@ -42,31 +51,6 @@ describe('MongoDB', () => {
             await db.close();
             expect(db.isConnected).to.be.false;
         });
-    });
-    it('should create and fetch and delete a datasource by id', async () => {
-        const db = await connect();
-        const name = uuid.v4();
-        const { id: insertedId } = await db.dataSources.create(name);
-        expect(insertedId).to.be.string;
-        const dataSource = await db.dataSources.fetch({ id: insertedId });
-        expect(dataSource.name).to.equal(name);
-        expect(dataSource.id).to.be.string;
-        const fetchedById = await db.dataSources.fetch({ id: insertedId });
-        expect(fetchedById).to.eql(dataSource);
-        const deletedId = await db.dataSources.delete({ id: insertedId });
-        expect(deletedId).to.eq(insertedId);
-    });
-    it('should create and fetch and delete a datasource by name', async () => {
-        const db = await connect();
-        const name = uuid.v4();
-        await db.dataSources.create(name);
-        const dataSource = await db.dataSources.fetch({ name });
-        expect(dataSource.name).to.equal(name);
-        expect(dataSource.id).to.be.string;
-        const fetchedByName = await db.dataSources.fetch({ name });
-        expect(fetchedByName).to.eql(dataSource);
-        const deletedName = await db.dataSources.delete({ name });
-        expect(deletedName).to.eq(name);
     });
     describe('delete', () => {
         it('should throw an error if both id and name are provided', async () => {
@@ -104,10 +88,19 @@ describe('MongoDB', () => {
         });
     });
     describe('fetch', () => {
+        it('should create an empty pipeline', async () => {
+            const db = await connect();
+            const name = 'a-new-pipeline';
+            const created = await db.pipelines.create({ name });
+            expect(created.name).to.eq(name);
+            expect(created).to.have.property('id');
+            expect(created).not.to.have.property('_id');
+            expect(created.id).to.be.string;
+        });
         it('should fetch all the dataSources', async () => {
             const db = await connect();
-            const names = new Array(5).fill(0).map(() => uuid.v4());
-            await Promise.all(names.map(db.dataSources.create));
+            const { entries, names } = generateEntries(5);
+            await Promise.all(entries.map(db.dataSources.create));
             const dataSources = await db.dataSources.fetchAll();
             names.forEach(name => {
                 const entry = dataSources.find(item => item.name === name);
@@ -142,16 +135,18 @@ describe('MongoDB', () => {
         });
         it('should fetch many by id', async () => {
             const db = await connect();
-            const names = new Array(5).fill(0).map(() => uuid.v4());
-            const created = await Promise.all(names.map(db.dataSources.create));
+            const { entries } = generateEntries(5);
+            const created = await Promise.all(
+                entries.map(db.dataSources.create)
+            );
             const ids = created.map(entry => entry.id);
             const response = await db.dataSources.fetchMany({ ids });
             expect(response).to.have.lengthOf(5);
         });
         it('should fetch many by name', async () => {
             const db = await connect();
-            const names = new Array(5).fill(0).map(() => uuid.v4());
-            await Promise.all(names.map(db.dataSources.create));
+            const { entries, names } = generateEntries(5);
+            await Promise.all(entries.map(db.dataSources.create));
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
