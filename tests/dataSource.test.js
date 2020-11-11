@@ -39,6 +39,14 @@ describe('dataSource', () => {
         const deletedId = await db.dataSources.delete({ id: insertedId });
         expect(deletedId).to.eq(insertedId);
     });
+    it('should list all the dataSources without their files list', async () => {
+        const db = await connect();
+        const name = uuid.v4();
+        await db.dataSources.create({ name });
+        const entries = await db.dataSources.fetchAll();
+        expect(entries.length).to.be.gte(1);
+        expect(entries).not.to.all.keys('files');
+    });
     it('should create and fetch and delete a datasource by name', async () => {
         const db = await connect();
         const name = uuid.v4();
