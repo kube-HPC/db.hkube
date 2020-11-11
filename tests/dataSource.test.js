@@ -94,7 +94,7 @@ describe('dataSource', () => {
         const response = await db.dataSources.uploadFiles({
             name,
             filesAdded: [updatedFile, newFile],
-            filesDropped: [fileToDrop],
+            filesDropped: [fileToDrop.name],
         });
         const { files } = response;
         expect(files).to.have.lengthOf(3);
