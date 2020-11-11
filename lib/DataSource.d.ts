@@ -15,7 +15,6 @@ export type DataSource = {
 };
 
 export interface DataSourcesInterface {
-    init(): void;
     create(props: { name: string }): Promise<DataSource>;
     delete(
         props: { name?: string; id?: string },
@@ -29,8 +28,8 @@ export interface DataSourcesInterface {
     fetchAll(): Promise<DataSource[]>;
     fetchMany(params: { ids?: Id[]; names?: string[] }): Promise<DataSource[]>;
     updateVersion(params: {
-        name: string;
-        id: Id;
+        name?: string;
+        id?: Id;
         versionDescription: string;
     }): Promise<DataSource>;
     uploadFiles(params: {

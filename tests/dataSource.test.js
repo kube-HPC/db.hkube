@@ -46,6 +46,8 @@ describe('dataSource', () => {
         const dataSource = await db.dataSources.fetch({ name });
         expect(dataSource.name).to.equal(name);
         expect(dataSource.id).to.be.string;
+        expect(dataSource).not.to.haveOwnProperty('_id');
+        expect(dataSource.id).to.be.string;
         const fetchedByName = await db.dataSources.fetch({ name });
         expect(fetchedByName).to.eql(dataSource);
         const deletedName = await db.dataSources.delete({ name });
@@ -74,7 +76,7 @@ describe('dataSource', () => {
         const [fileToDrop, fileToModify, fileToKeep] = filesAdded;
         /** @type {FileMeta} */
         const updatedFile = { ...fileToModify, path: 'new path' };
-        const newFile = generateMockFiles(1)[0];
+        const [newFile] = generateMockFiles(1);
 
         await db.dataSources.uploadFiles({
             name,
@@ -92,5 +94,49 @@ describe('dataSource', () => {
         expect(files).to.deep.include(updatedFile);
         expect(files).to.deep.include(newFile);
         expect(files).not.to.deep.include(fileToDrop);
+    });
+    it('should create a new version', async () => {
+        const db = await connect();
+        const name = uuid.v4();
+        const createdResponse = await db.dataSources.create({ name });
+        const newDescription = 'my new version';
+        const updateResponse = await db.dataSources.updateVersion({
+            name,
+            versionDescription: newDescription,
+        });
+        const {
+            id: createdId,
+            versionDescription: createdDescription,
+            ...createdRest
+        } = createdResponse;
+        const {
+            id: updatedId,
+            versionDescription: updatedDescription,
+            ...updatedRest
+        } = updateResponse;
+
+        expect(createdRest).to.eql(updatedRest);
+        expect(updatedId).not.to.eq(createdId);
+        expect(updatedDescription).to.eql(newDescription);
+        expect(updateResponse).not.to.haveOwnProperty('_id');
+    });
+    it('should fetch the latest version given name only', async () => {
+        const db = await connect();
+        const name = uuid.v4();
+        await db.dataSources.create({ name });
+        const updates = await Promise.all(
+            new Array(4)
+                .fill(0)
+                .map((_, ii) => `update-${ii}`)
+                .map(newDescription =>
+                    db.dataSources.updateVersion({
+                        name,
+                        versionDescription: newDescription,
+                    })
+                )
+        );
+        const fetchResponse = await db.dataSources.fetch({ name });
+        const latest = updates[updates.length - 1];
+        expect(fetchResponse).to.eql(latest);
     });
 });
