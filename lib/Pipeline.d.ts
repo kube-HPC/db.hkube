@@ -6,7 +6,7 @@ export type Pipeline = {
 };
 
 export interface PipelinesInterface {
-    create(name: string): Promise<Pipeline>;
+    create(props: { name: string }): Promise<Pipeline>;
     delete(props: { name?: string; id?: Id }): Promise<string>;
     fetch(params: { id?: Id; name?: string }): Promise<Pipeline>;
     fetchAll(): Promise<Pipeline[]>;
