@@ -9,7 +9,7 @@ const generateMockFiles = (amount = 4) =>
         name: `file-${ii}-${uuid.v4()}`,
         path: `path-${ii}`,
         size: 1,
-        type: 'csv',
+        type: Math.random() > 0.5 ? 'csv' : 'md',
     }));
 
 describe('dataSource', () => {
@@ -147,4 +147,14 @@ describe('dataSource', () => {
         const latest = updates[updates.length - 1];
         expect(fetchResponse).to.eql(latest);
     });
+
+    // it.only('should return all the dataSources metadata aggregation', async () => {
+    //     const db = await connect();
+    //     // const name = uuid.v4();
+    //     // const filesMeta = generateMockFiles(10);
+    //     // await db.dataSources.create({ name });
+    //     // await db.dataSources.uploadFiles({ name, filesAdded: filesMeta });
+    //     const all = await db.dataSources.fetchAll();
+    //     console.log(JSON.stringify(all, null, 2));
+    // });
 });

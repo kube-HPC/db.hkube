@@ -14,6 +14,16 @@ export type DataSource = {
     versionDescription: string;
 };
 
+export type DataSourceMeta = {
+    _id: string;
+    name: string;
+    versionDescription: string;
+    filesCount: number;
+    avgFileSize: string;
+    totalSize: number;
+    fileTypes: string[];
+};
+
 export interface DataSourcesInterface {
     create(props: { name: string }): Promise<DataSource>;
     delete(
@@ -25,7 +35,7 @@ export interface DataSourcesInterface {
         name?: string;
         version?: string;
     }): Promise<DataSource>;
-    fetchAll(): Promise<DataSource[]>;
+    fetchAll(): Promise<DataSourceMeta[]>;
     fetchMany(params: { ids?: Id[]; names?: string[] }): Promise<DataSource[]>;
     updateVersion(params: {
         name?: string;
