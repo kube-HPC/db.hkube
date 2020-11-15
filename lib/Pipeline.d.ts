@@ -10,4 +10,5 @@ export interface PipelinesInterface {
     delete(props: { name?: string; id?: Id }): Promise<string>;
     fetch(params: { id?: Id; name?: string }): Promise<Pipeline>;
     fetchAll(): Promise<Pipeline[]>;
+    fetchMany(params: { ids?: Id[]; names?: string[] }): Promise<Pipeline[]>;
 }

@@ -1,24 +1,18 @@
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.test') });
-const uuid = require('uuid');
 const { expect } = require('chai');
+const { v4: uuid } = require('uuid');
 const DBConnection = require('./../');
 const connect = require('./connect');
 const { ObjectID } = require('mongodb');
-
+const { generateEntries } = require('./utils');
 // a valid mongo ObjectID;
 const nonExistingId = new ObjectID().toHexString();
-const { dummyFile } = require('./mocks');
 
-const generateEntries = amount => {
-    const names = new Array(amount).fill(0).map(() => uuid.v4());
-    return {
-        names,
-        entries: names.map(name => ({ name, files: [dummyFile] })),
-    };
-};
+const generateMockPipelineNames = (amount = 5) =>
+    new Array(amount).fill(0).map((_, idx) => `pipeline-${idx}-${uuid()}`);
 
-describe('MongoDB', () => {
+describe('Collection', () => {
     describe('setup', () => {
         it('should throw invalid provider error', () => {
             // @ts-expect-error
@@ -133,28 +127,54 @@ describe('MongoDB', () => {
                 db.dataSources.fetch({ id: nonExistingId })
             ).to.be.rejectedWith(/could not find/i);
         });
-        it('should fetch many by id', async () => {
-            const db = await connect();
-            const { entries } = generateEntries(5);
-            const created = await Promise.all(
-                entries.map(db.dataSources.create)
-            );
-            const ids = created.map(entry => entry.id);
-            const response = await db.dataSources.fetchMany({ ids });
-            expect(response).to.have.lengthOf(5);
-        });
-        it('should fetch many by name', async () => {
-            const db = await connect();
-            const { entries, names } = generateEntries(5);
-            await Promise.all(entries.map(db.dataSources.create));
-            const response = await db.dataSources.fetchMany({ names });
-            expect(response).to.have.lengthOf(5);
-        });
         it('should throw missing parameters', async () => {
             const db = await connect();
             await expect(db.dataSources.fetchMany({})).to.be.rejectedWith(
                 /you did not provide names | ids/i
             );
+        });
+    });
+
+    describe('fetch many', () => {
+        it('should throw missing ids and names', async () => {
+            const db = await connect();
+            const promise = db.pipelines.fetchMany({});
+            await expect(promise).to.be.rejectedWith(
+                'you did not provide names | ids'
+            );
+        });
+        it('should fetch many by id', async () => {
+            const db = await connect();
+            const names = generateMockPipelineNames();
+
+            const created = await Promise.all(
+                names.map(name => db.pipelines.create({ name }))
+            );
+            const ids = created.map(entry => entry.id);
+            const response = await db.pipelines.fetchMany({ ids });
+            expect(response).to.have.lengthOf(5);
+        });
+        it('should fetch many by name', async () => {
+            const db = await connect();
+            const names = generateMockPipelineNames();
+
+            await Promise.all(names.map(name => db.pipelines.create({ name })));
+            const response = await db.pipelines.fetchMany({ names });
+            expect(response).to.have.lengthOf(5);
+        });
+    });
+    describe('fetchAll', () => {
+        it('should fetch all pipelines', async () => {
+            const db = await connect();
+            const names = generateMockPipelineNames();
+
+            await Promise.all(names.map(name => db.pipelines.create({ name })));
+            const response = await db.pipelines.fetchMany({ names });
+            expect(response.length).to.be.gte(names.length);
+            response.forEach(entry => {
+                expect(entry).to.haveOwnProperty('id');
+                expect(entry).to.haveOwnProperty('name');
+            });
         });
     });
 });
