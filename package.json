@@ -8,8 +8,8 @@
         "format": "prettier --write .",
         "pretest": "npm run lint",
         "start:compose": "docker-compose up -d && sleep 5 && ./scripts/startReplicas.sh",
-        "test": "NODE_ENV=test DB_NAME=tests DB_USER_NAME=tester DB_PASSWORD=password ./node_modules/mocha/bin/_mocha tests --colors --recursive --exit",
-        "test:cov": "./node_modules/nyc/bin/nyc.js --reporter=html --reporter=text --reporter=lcov npm run test",
+        "test": "NODE_ENV=test ./node_modules/mocha/bin/_mocha tests --colors --recursive --exit",
+        "test:cov": "NODE_ENV=test ./node_modules/nyc/bin/nyc.js --reporter=html --reporter=text --reporter=lcov npm run test",
         "coverage": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
         "build": "npm publish"
     },
