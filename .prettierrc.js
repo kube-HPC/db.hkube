@@ -4,7 +4,7 @@ module.exports = {
     trailingComma: 'es5',
     arrowParens: 'avoid',
     tabWidth: 4,
-    // printWidth: 180,
+    printWidth: 100,
     overrides: [
         {
             files: '*.js',

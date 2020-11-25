@@ -109,11 +109,8 @@ const createJob = () => ({
 describe('Jobs', () => {
     it('should throw error itemNotFound', async () => {
         const db = await connect();
-        const job = createJob();
-        const promise = db.jobs.fetch(job);
-        await expect(promise).to.be.rejectedWith(
-            `could not find jobs:${job.jobId}`
-        );
+        const promise = db.jobs.fetch({ jobId: 'no_such' });
+        await expect(promise).to.be.rejectedWith(/could not find/i);
     });
     it('should throw conflict error', async () => {
         const db = await connect();

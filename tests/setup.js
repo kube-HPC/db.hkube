@@ -1,4 +1,5 @@
-require('dotenv').config({ path: './../.env.test' });
+const path = require('path');
+require('dotenv').config({ path: path.resolve(process.cwd(), '.env.test') });
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const { openConnections } = require('./connect');

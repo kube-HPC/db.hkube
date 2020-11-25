@@ -1,5 +1,3 @@
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.test') });
 const uuid = require('uuid');
 const { expect } = require('chai');
 const DBConnection = require('./../');
@@ -100,7 +98,7 @@ describe('MongoDB', () => {
         it('should fetch all the dataSources', async () => {
             const db = await connect();
             const { entries, names } = generateEntries(5);
-            await Promise.all(entries.map(db.dataSources.create));
+            await Promise.all(entries.map(d => db.dataSources.create(d)));
             const dataSources = await db.dataSources.fetchAll();
             names.forEach(name => {
                 const entry = dataSources.find(item => item.name === name);
@@ -137,7 +135,7 @@ describe('MongoDB', () => {
             const db = await connect();
             const { entries } = generateEntries(5);
             const created = await Promise.all(
-                entries.map(db.dataSources.create)
+                entries.map(d => db.dataSources.create(d))
             );
             const ids = created.map(entry => entry.id);
             const response = await db.dataSources.fetchMany({ ids });
@@ -146,7 +144,7 @@ describe('MongoDB', () => {
         it('should fetch many by name', async () => {
             const db = await connect();
             const { entries, names } = generateEntries(5);
-            await Promise.all(entries.map(db.dataSources.create));
+            await Promise.all(entries.map(d => db.dataSources.create(d)));
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
