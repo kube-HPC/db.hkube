@@ -1,11 +1,6 @@
 const { expect } = require('chai');
-const uuid = require('uuid');
 const connect = require('./connect');
-
-const generateExperiment = () => ({
-    name: uuid.v4(),
-    description: 'this is new description for new experiment',
-});
+const { generateExperiment } = require('./common');
 
 describe('Experiments', () => {
     it('should throw error itemNotFound', async () => {
@@ -37,14 +32,7 @@ describe('Experiments', () => {
         const res = await db.experiments.delete(experiment);
         const promise = db.experiments.fetch({ name: experiment.name });
         expect(res).to.eql({ deleted: 1 });
-        await expect(promise).to.be.rejectedWith(/could not find version/i);
-    });
-    it.skip('should upsert and update version', async () => {
-        const db = await connect();
-        const experiment = generateExperiment();
-        await db.experiments.update(experiment);
-        const res = await db.experiments.fetch({ name: experiment.name });
-        expect(res).to.eql({ ...algorithm, ...params });
+        await expect(promise).to.be.rejectedWith(/could not find/i);
     });
     it('should create and fetch version list', async () => {
         const db = await connect();

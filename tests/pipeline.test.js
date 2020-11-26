@@ -1,37 +1,6 @@
 const { expect } = require('chai');
-const uuid = require('uuid');
 const connect = require('./connect');
-
-const generatePipeline = () => ({
-    name: `pipeline-${uuid.v4()}`,
-    nodes: [
-        {
-            nodeName: 'green',
-            algorithmName: `alg-${uuid.v4()}`,
-            input: ['@flowInput.files.link'],
-        },
-        {
-            nodeName: 'yellow',
-            algorithmName: `alg-${uuid.v4()}`,
-            input: ['@green'],
-        },
-        {
-            nodeName: 'black',
-            algorithmName: `alg-${uuid.v4()}`,
-            input: ['@yellow'],
-        },
-        {
-            nodeName: 'white',
-            algorithmName: `alg-${uuid.v4()}`,
-            input: ['test'],
-        },
-    ],
-    ttl: 30,
-    options: {
-        batchTolerance: 30,
-        progressVerbosityLevel: 'debug',
-    },
-});
+const { generatePipeline } = require('./common');
 
 describe('Pipelines', () => {
     it('should throw error itemNotFound', async () => {
@@ -60,16 +29,6 @@ describe('Pipelines', () => {
         const name = pipeline.name;
         const params = { ttl: 60 };
         await db.pipelines.create(pipeline);
-        await db.pipelines.update({ ...params, name });
-        const res = await db.pipelines.fetch({ name });
-        expect(res).to.eql({ ...pipeline, ...params });
-    });
-    it('should upsert and update', async () => {
-        const db = await connect();
-        const pipeline = generatePipeline();
-        const name = pipeline.name;
-        const params = { cpu: 2, mem: '512Mi' };
-        await db.pipelines.update(pipeline);
         await db.pipelines.update({ ...params, name });
         const res = await db.pipelines.fetch({ name });
         expect(res).to.eql({ ...pipeline, ...params });

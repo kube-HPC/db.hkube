@@ -24,16 +24,6 @@ describe('Algorithms', () => {
         const res2 = await db.algorithms.fetch({ name: algorithm.name });
         expect(res1).to.eql(res2);
     });
-    it('should throw inclusion cannot be mixed with exclusion', async () => {
-        const db = await connect();
-        const cpu = Math.random() * 1000;
-        const promise = db.algorithms.fetchAll({
-            query: { cpu },
-            excluded: ['builds'],
-            included: ['versions'],
-        });
-        await expect(promise).to.be.rejectedWith('inclusion cannot be mixed with exclusion');
-    });
     it('should create and fetch many', async () => {
         const db = await connect();
         const cpu = Math.random() * 1000;
@@ -54,27 +44,35 @@ describe('Algorithms', () => {
         const res = await db.algorithms.fetch({ name });
         expect(res).to.eql({ ...algorithm, ...params });
     });
-    it('should create and delete algorithm', async () => {
+    it('should create and delete algorithm with dependencies', async () => {
         const db = await connect();
         const algorithm = generateAlgorithm();
         const name = algorithm.name;
-        const res1 = await db.algorithms.create(algorithm);
-        const res2 = await db.algorithms.fetch({ name });
-        const res3 = await db.algorithms.delete({ name });
+        const version1 = generateVersion(algorithm);
+        const version2 = generateVersion(algorithm);
+        const build1 = generateBuild(algorithm);
+        const build2 = generateBuild(algorithm);
+
+        await db.algorithms.create(algorithm);
+        await db.algorithms.versions.create(version1);
+        await db.algorithms.versions.create(version2);
+        await db.algorithms.builds.create(build1);
+        await db.algorithms.builds.create(build2);
+
+        const res1 = await db.algorithms.fetch({ name });
+        const versions1 = await db.algorithms.versions.fetchAll({ query: { name } });
+        const builds1 = await db.algorithms.builds.fetchAll({ query: { algorithmName: name } });
+        const res2 = await db.algorithms.delete({ name });
+        const versions2 = await db.algorithms.versions.fetchAll({ query: { name } });
+        const builds2 = await db.algorithms.builds.fetchAll({ query: { algorithmName: name } });
         const promise = db.algorithms.fetch({ name });
-        expect(res1).to.eql(res2);
-        expect(res3).to.eql({ deleted: 1 });
+        expect(versions1).to.have.lengthOf(2);
+        expect(builds1).to.have.lengthOf(2);
+        expect(versions2).to.have.lengthOf(0);
+        expect(builds2).to.have.lengthOf(0);
+        expect(res1).to.eql(algorithm);
+        expect(res2).to.eql({ deleted: 5 });
         await expect(promise).to.be.rejectedWith(/could not find/i);
-    });
-    it('should upsert and update algorithm', async () => {
-        const db = await connect();
-        const algorithm = generateAlgorithm();
-        const name = algorithm.name;
-        const params = { cpu: 2, mem: '512Mi' };
-        await db.algorithms.update(algorithm);
-        await db.algorithms.update({ ...params, name });
-        const res = await db.algorithms.fetch({ name });
-        expect(res).to.eql({ ...algorithm, ...params });
     });
     it('should create and fetch algorithm list by query', async () => {
         const db = await connect();
@@ -107,25 +105,5 @@ describe('Algorithms', () => {
         await db.algorithms.create(algorithm4);
         const list = await db.algorithms.count({ query: { env } });
         expect(list).to.eql(4);
-    });
-    it('should create and get algorithm without version', async () => {
-        const db = await connect();
-        const algorithm = generateAlgorithm();
-        const version1 = generateVersion(algorithm);
-        const version2 = generateVersion(algorithm);
-        const build1 = generateBuild(algorithm);
-        const build2 = generateBuild(algorithm);
-        algorithm.version = version1.version;
-        await db.algorithms.create(algorithm);
-        await db.algorithms.versions.create(version1);
-        await db.algorithms.versions.create(version2);
-        await db.algorithms.builds.create(build1);
-        await db.algorithms.builds.create(build2);
-        const res = await db.algorithms.fetchAll({
-            query: { name: algorithm.name },
-            excluded: ['versions', 'builds'],
-        });
-        expect(res[0]).to.not.have.property('versions');
-        expect(res[0]).to.not.have.property('builds');
     });
 });

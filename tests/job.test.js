@@ -1,110 +1,6 @@
 const { expect } = require('chai');
-const uuid = require('uuid');
 const connect = require('./connect');
-
-const generateGraph = () => ({
-    timestamp: Date.now(),
-    nodes: [
-        {
-            nodeName: `node-${uuid.v4()}`,
-            algorithmName: 'green-alg',
-            input: [1, 2, true, '@data', '#@data', { obj: 'prop' }],
-        },
-        {
-            nodeName: `node-${uuid.v4()}`,
-            algorithmName: 'green-alg',
-            input: [1, 2, true, '@green', '#@data', { obj: 'prop' }],
-        },
-        {
-            nodeName: `node-${uuid.v4()}`,
-            algorithmName: 'green-alg',
-            input: [1, 2, true, '@yellow', '#@data', { obj: 'prop' }],
-        },
-    ],
-    edges: [
-        {
-            from: 'green',
-            to: 'yellow',
-            value: {
-                types: ['waitNode', 'input'],
-            },
-        },
-        {
-            from: 'yellow',
-            to: 'black',
-            value: {
-                types: ['waitNode', 'input'],
-            },
-        },
-    ],
-});
-
-const generatePipeline = () => ({
-    name: 'simple-flow',
-    nodes: [
-        {
-            nodeName: 'green',
-            algorithmName: 'green-alg',
-            input: ['@flowInput.files.link'],
-        },
-        {
-            nodeName: 'yellow',
-            algorithmName: 'yellow-alg',
-            input: ['@green'],
-        },
-        {
-            nodeName: 'black',
-            algorithmName: 'black-alg',
-            input: ['@yellow'],
-        },
-        {
-            nodeName: 'white',
-            algorithmName: 'black-alg',
-            input: ['test'],
-        },
-    ],
-    options: {
-        batchTolerance: 30,
-        progressVerbosityLevel: 'debug',
-    },
-});
-
-const generateStatus = () => ({
-    timestamp: '2020-11-18T10:38:37.849Z',
-    jobId: 'main:DAG:7pn9ewgg',
-    status: 'active',
-    level: 'debug',
-    pipeline: 'DAG',
-    data: {
-        progress: 0,
-        states: {
-            creating: 5,
-            preschedule: 2,
-        },
-        details: '0% completed, 5 creating, 2 preschedule',
-    },
-});
-
-const generateResult = () => ({
-    timestamp: '2020-11-18T11:14:40.884Z',
-    jobId: 'main:DAG:7pn9ewgg',
-    pipeline: 'DAG',
-    data: {
-        storageInfo: {
-            path: 'local-hkube-results/main:DAG:7pn9ewgg/result.json',
-        },
-    },
-    status: 'completed',
-    timeTook: 2163.044,
-});
-
-const createJob = () => ({
-    jobId: `jobId-${uuid.v4()}`,
-    pipeline: generatePipeline(),
-    graph: generateGraph(),
-    status: generateStatus(),
-    result: generateResult(),
-});
+const { generateJob, generateGraph } = require('./common');
 
 describe('Jobs', () => {
     it('should throw error itemNotFound', async () => {
@@ -114,41 +10,62 @@ describe('Jobs', () => {
     });
     it('should throw conflict error', async () => {
         const db = await connect();
-        const job = createJob();
+        const job = generateJob();
         await db.jobs.create(job);
         const promise = db.jobs.create(job);
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should create and fetch job', async () => {
         const db = await connect();
-        const job = createJob();
+        const job = generateJob();
         const res1 = await db.jobs.create(job);
         const res2 = await db.jobs.fetch({ jobId: job.jobId });
         expect(res1).to.eql(res2);
     });
-    it('should create and update job', async () => {
+    it('should create and update job graph', async () => {
         const db = await connect();
-        const job = createJob();
+        const job = generateJob();
         const graph = generateGraph();
+        const { jobId } = job;
         await db.jobs.create(job);
-        await db.jobs.update({ ...job, graph });
-        const res = await db.jobs.fetch({ jobId: job.jobId });
+        await db.jobs.update({ jobId, graph });
+        const res = await db.jobs.fetch({ jobId });
         expect(res).to.eql({ ...job, graph });
     });
-    it('should upsert and update job', async () => {
+    it('should throw for itemNotFound on patch', async () => {
         const db = await connect();
-        const job = createJob();
-        const graph = generateGraph();
-        await db.jobs.update(job);
-        await db.jobs.update({ ...job, graph });
-        const res = await db.jobs.fetch({ jobId: job.jobId });
-        expect(res).to.eql({ ...job, graph });
+        const promise = db.jobs.fetch({ jobId: 'no-such' });
+        await expect(promise).to.be.rejectedWith(/could not find/i);
+    });
+    it('should create and patch job status', async () => {
+        const db = await connect();
+        const job = generateJob();
+        const { jobId } = job;
+        const level = 'error';
+        const error = 'there was an exception';
+        await db.jobs.create(job);
+        await db.jobs.patch({ jobId, status: { level, error } });
+        const res = await db.jobs.fetch({ jobId });
+        expect(res.status.level).to.eql(level);
+        expect(res.status.error).to.eql(error);
+        expect(res.status.data).to.eql(job.status.data);
+    });
+    it('should create and update job result', async () => {
+        const db = await connect();
+        const jobData = generateJob();
+        const { result, ...job } = jobData;
+        const { jobId } = job;
+        const status = 'completed';
+        await db.jobs.create(job);
+        await db.jobs.update({ jobId, result: { status } });
+        const res = await db.jobs.fetch({ jobId });
+        expect(res.result.status).to.eql(status);
     });
     it('should create and fetch job list', async () => {
         const db = await connect();
-        const job1 = createJob();
-        const job2 = createJob();
-        const job3 = createJob();
+        const job1 = generateJob();
+        const job2 = generateJob();
+        const job3 = generateJob();
         await db.jobs.create(job1);
         await db.jobs.create(job2);
         await db.jobs.create(job3);

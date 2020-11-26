@@ -16,6 +16,7 @@
     "author": "Reggev Amsalem",
     "license": "ISC",
     "dependencies": {
+        "lodash.merge": "^4.6.2",
         "mongodb": "^3.6.3"
     },
     "devDependencies": {
