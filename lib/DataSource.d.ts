@@ -36,6 +36,6 @@ export interface DataSourcesInterface {
         name?: string;
         id?: Id;
         filesAdded?: FileMeta[];
-        filesDropped?: FileMeta[];
+        filesDropped?: string[];
     }): Promise<DataSource>;
 }
