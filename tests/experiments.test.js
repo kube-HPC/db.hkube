@@ -28,10 +28,13 @@ describe('Experiments', () => {
     it('should create and delete experiment', async () => {
         const db = await connect();
         const experiment = generateExperiment();
+        const name = experiment.name;
         await db.experiments.create(experiment);
-        const res = await db.experiments.delete(experiment);
-        const promise = db.experiments.fetch({ name: experiment.name });
-        expect(res).to.eql({ deleted: 1 });
+        const res1 = await db.experiments.fetch({ name });
+        const res2 = await db.experiments.delete({ name });
+        const promise = db.experiments.fetch({ name });
+        expect(res1).to.eql(experiment);
+        expect(res2).to.eql({ deleted: 1 });
         await expect(promise).to.be.rejectedWith(/could not find/i);
     });
     it('should create and fetch version list', async () => {

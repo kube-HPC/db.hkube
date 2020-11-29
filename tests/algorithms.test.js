@@ -32,7 +32,7 @@ describe('Algorithms', () => {
         const algorithm3 = generateAlgorithm({ cpu });
         const res1 = await db.algorithms.createMany([algorithm1, algorithm2, algorithm3]);
         const res2 = await db.algorithms.fetchAll({ query: { cpu } });
-        expect(res1).to.eql(res2.length);
+        expect(res1.inserted).to.eql(res2.length);
     });
     it('should create and update algorithm', async () => {
         const db = await connect();
@@ -41,6 +41,16 @@ describe('Algorithms', () => {
         const params = { cpu: 2, mem: '512Mi' };
         await db.algorithms.create(algorithm);
         await db.algorithms.update({ ...params, name });
+        const res = await db.algorithms.fetch({ name });
+        expect(res).to.eql({ ...algorithm, ...params });
+    });
+    it('should create and patch algorithm', async () => {
+        const db = await connect();
+        const algorithm = generateAlgorithm();
+        const name = algorithm.name;
+        const params = { cpu: 2, mem: '512Mi' };
+        await db.algorithms.create(algorithm);
+        await db.algorithms.patch({ ...params, name });
         const res = await db.algorithms.fetch({ name });
         expect(res).to.eql({ ...algorithm, ...params });
     });

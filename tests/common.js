@@ -25,7 +25,7 @@ const generateVersion = (algorithm, semver) => {
     };
 };
 
-const generateBuild = algorithm => ({
+const generateBuild = (algorithm, progress) => ({
     buildId: uuid.v4(),
     imageTag: 'lfhge07l',
     algorithm,
@@ -35,7 +35,7 @@ const generateBuild = algorithm => ({
     algorithmName: algorithm.name,
     type: 'Code',
     status: 'active',
-    progress: 60,
+    progress: progress || 60,
     error: null,
     trace: null,
     endTime: null,
@@ -152,6 +152,79 @@ const generateExperiment = () => ({
     description: 'this is new description for new experiment',
 });
 
+const generateAlgorithmReadme = () => ({
+    name: uuid.v4(),
+    data: `
+    algorithm    
+    Options:    
+    |option|description|type|required|default|  
+    |---|---|---|---|---|  
+    |name|The name of the algorithm|string|||  
+    |--file, -f|the algorithm file|string|||  
+    |--env|the algorithm env  [choices: "python", "nodejs", "java"]|string|||  
+    |--codePath|the code path for the algorithm|string|||  
+    |--codeEntryPoint, --entryPoint|the code entry point for the algorithm|string|||  
+    |--image, --algorithmImage|set algorithm image|string|||  
+    |--cpu|CPU requirements of the algorithm in cores |number|||  
+    |--gpu|GPU requirements of the algorithm in cores |number|||  
+    |--mem|memory requirements of the algorithm. Possible units are ['Ki', 'M', 'Mi', 'Gi']. Minimum is 4Mi|string|||  
+    |--noWait|if true, does not wait for the build to finish  |boolean||false|  
+    |--setCurrent|if true, sets the new version as the current version|boolean||false|  
+    `,
+});
+
+const generatePipelineReadme = () => ({
+    name: uuid.v4(),
+    data: `
+    pipeline    
+    Options:    
+    |option|description|type|required|default|  
+    |---|---|---|---|---|  
+    |name|The name of the algorithm|string|||  
+    |--file, -f|the algorithm file|string|||  
+    |--env|the algorithm env  [choices: "python", "nodejs", "java"]|string|||  
+    |--codePath|the code path for the algorithm|string|||  
+    |--codeEntryPoint, --entryPoint|the code entry point for the algorithm|string|||  
+    |--image, --algorithmImage|set algorithm image|string|||  
+    |--cpu|CPU requirements of the algorithm in cores |number|||  
+    |--gpu|GPU requirements of the algorithm in cores |number|||  
+    |--mem|memory requirements of the algorithm. Possible units are ['Ki', 'M', 'Mi', 'Gi']. Minimum is 4Mi|string|||  
+    |--noWait|if true, does not wait for the build to finish  |boolean||false|  
+    |--setCurrent|if true, sets the new version as the current version|boolean||false|  
+    `,
+});
+
+const generateTensorboard = () => ({
+    boardLink: 'hkube/board/a178/',
+    boardReference: 'a178',
+    endTime: null,
+    error: null,
+    id: uuid.v4(),
+    jobId: 'main:exec_pipeline:6kvq38gc',
+    logDir: '/var/tmp/fs/storage/local-hkube-algo-metrics/',
+    nodeName: 'A',
+    pipelineName: 'exec_pipeline',
+    result: null,
+    startTime: 1606647118209,
+    status: 'pending',
+    taskId: 'A:eval-alg:d5c7ce6c-b8d9-4631-b9cb-95d25b268f06',
+    type: 'task',
+});
+
+const generateWebhook = () => ({
+    jobId: uuid.v4(),
+    type: 'progress',
+    timestamp: '2020-11-29T13:26:03.431Z',
+    url: 'http://my-url-to-progress',
+    pipelineStatus: 'pending',
+    responseStatus: 'failed',
+    httpResponse: {
+        statusCode: 'ENOTFOUND',
+        statusMessage: 'getaddrinfo ENOTFOUND my-url-to-progress',
+    },
+    status: 'completed',
+});
+
 module.exports = {
     generateAlgorithm,
     generateVersion,
@@ -162,4 +235,8 @@ module.exports = {
     generateResult,
     generateJob,
     generateExperiment,
+    generateAlgorithmReadme,
+    generatePipelineReadme,
+    generateTensorboard,
+    generateWebhook,
 };

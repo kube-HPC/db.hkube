@@ -43,15 +43,29 @@ describe('Builds', () => {
         const res = await db.algorithms.builds.fetch(build);
         expect(res.status).to.eql(status);
     });
+    it('should create and patch build', async () => {
+        const db = await connect();
+        const algorithm = generateAlgorithm();
+        const build = generateBuild(algorithm);
+        const status = 'completed';
+        await db.algorithms.builds.create(build);
+        await db.algorithms.builds.patch({
+            ...build,
+            status,
+        });
+        const res = await db.algorithms.builds.fetch(build);
+        expect(res.status).to.eql(status);
+    });
     it('should create and delete build', async () => {
         const db = await connect();
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
         await db.algorithms.builds.create(build);
         const res1 = await db.algorithms.builds.fetch(build);
-        await db.algorithms.builds.delete(build);
+        const res2 = await db.algorithms.builds.delete(build);
         const promise = db.algorithms.builds.fetch(build);
         expect(res1).to.eql(build);
+        expect(res2).to.eql({ deleted: 1 });
         await expect(promise).to.be.rejectedWith(/could not find/i);
     });
     it('should create and fetch build list', async () => {
@@ -63,7 +77,31 @@ describe('Builds', () => {
         await db.algorithms.builds.create(build1);
         await db.algorithms.builds.create(build2);
         await db.algorithms.builds.create(build3);
-        const list = await db.algorithms.fetchAll();
-        expect(list.length).to.be.greaterThan(3);
+        const list = await db.algorithms.builds.fetchAll({
+            query: { algorithmName: algorithm.name },
+        });
+        expect(list).to.have.lengthOf(3);
+    });
+    it('should create and fetch versions with sort asc and limit', async () => {
+        const db = await connect();
+        const algorithm = generateAlgorithm();
+        const build1 = generateBuild(algorithm, 80);
+        const build2 = generateBuild(algorithm, 90);
+        const build3 = generateBuild(algorithm, 70);
+        const build4 = generateBuild(algorithm, 85);
+        await db.algorithms.builds.create(build1);
+        await db.algorithms.builds.create(build2);
+        await db.algorithms.builds.create(build3);
+        await db.algorithms.builds.create(build4);
+        const res = await db.algorithms.builds.fetchAll({
+            query: { algorithmName: algorithm.name },
+            fields: { algorithm: false },
+            sort: { progress: 'desc' },
+            limit: 3,
+        });
+        expect(res[0]).to.not.have.property('algorithm');
+        const bldMap = [build2, build4, build1].map(v => v.progress);
+        const resMap = res.map(v => v.progress);
+        expect(resMap).to.eql(bldMap);
     });
 });
