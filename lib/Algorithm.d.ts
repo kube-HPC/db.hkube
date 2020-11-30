@@ -1,4 +1,4 @@
-import { Id } from './types';
+import { Id } from './types.d';
 
 export type Algorithm = {
     /** Unique identifier representing a specific algorithm */

@@ -1,8 +1,8 @@
 const MongoDB = require('./lib/MongoDB');
 /**
- * @typedef {import('./lib/types').ProviderName} ProviderName
- * @typedef {import('./lib/types').Config} Config
- * @typedef {import('./lib/Provider').ProviderInterface} ProviderInterface
+ * @typedef {import('./lib/MongoDB/types.d').ProviderName} ProviderName
+ * @typedef {import('./lib/MongoDB/types.d').Config} Config
+ * @typedef {import('./lib/MongoDB/Provider').ProviderInterface} ProviderInterface
  */
 
 const providers = {
@@ -23,6 +23,7 @@ const DBConnection = (config, provider = 'mongo') => {
     if (!providerConfig) {
         throw new Error(`invalid config for provider ${provider}`);
     }
+    // @ts-ignore
     return new DBProvider(providerConfig);
 };
 
