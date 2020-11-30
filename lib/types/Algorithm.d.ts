@@ -80,8 +80,8 @@ export type Algorithm = {
 };
 
 export interface AlgorithmsInterface {
-    create(name: string): Promise<Algorithm>;
-    delete(props: { id?: Id; name?: string }): Promise<string>;
-    fetch(params: { id?: Id; name?: string }): Promise<Algorithm>;
+    create(algorithm: Algorithm): Promise<Algorithm>;
+    delete(props: { name?: string }): Promise<string>;
+    fetch(params: { name?: string }): Promise<Algorithm>;
     fetchAll(): Promise<Algorithm[]>;
 }
