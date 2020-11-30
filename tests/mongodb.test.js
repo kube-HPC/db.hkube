@@ -22,7 +22,6 @@ describe('MongoDB', () => {
             // @ts-expect-error
             expect(() => DBConnection({}, 'invalid-provider')).to.throw(/invalid provider/i);
         });
-
         it('should throw invalid config error', () => {
             // @ts-expect-error
             expect(() => DBConnection({ invalid: '' })).to.throw(/invalid config/i);
@@ -44,6 +43,11 @@ describe('MongoDB', () => {
             expect(db.isConnected).to.be.true;
             await db.close();
             expect(db.isConnected).to.be.false;
+        });
+        it.skip('should connectTimeoutMS', async () => {
+            const promise = connect({ connectTimeoutMS: 500 });
+
+            await expect(promise).to.be.rejectedWith(/could not find/i);
         });
     });
     describe('delete', () => {
@@ -87,7 +91,7 @@ describe('MongoDB', () => {
             expect(created).to.have.property('id');
             expect(created).not.to.have.property('_id');
         });
-        it('should create object with id', async () => {
+        it('should create object without id', async () => {
             const db = await connect();
             const name = uuid.v4();
             const created = await db.pipelines.create({ name }, { applyId: false });
