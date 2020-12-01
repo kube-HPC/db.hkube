@@ -1,4 +1,4 @@
-import { Id } from './types';
+import { Id } from './MongoDB/types';
 
 export type FileMeta = {
     name: string;
@@ -20,11 +20,7 @@ export interface DataSourcesInterface {
         props: { name?: string; id?: string },
         options?: { allowNotFound?: boolean }
     ): Promise<Id | null>;
-    fetch(params: {
-        id?: Id;
-        name?: string;
-        version?: string;
-    }): Promise<DataSource>;
+    fetch(params: { id?: Id; name?: string; version?: string }): Promise<DataSource>;
     fetchAll(): Promise<DataSource[]>;
     fetchMany(params: { ids?: Id[]; names?: string[] }): Promise<DataSource[]>;
     updateVersion(params: {

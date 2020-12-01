@@ -38,16 +38,39 @@ describe('MongoDB', () => {
                 /you did not provide password/i
             );
         });
+        it('should throw Authentication failed', async () => {
+            const promise = connect({
+                user: 'no_such_user',
+            });
+            await expect(promise).to.be.rejectedWith(/Authentication failed/i);
+        });
+        it('should throw ENOTFOUND', async () => {
+            const promise = connect({
+                host: 'no_such_host',
+                serverSelectionTimeoutMS: 100,
+            });
+            await expect(promise).to.be.rejectedWith(/getaddrinfo ENOTFOUND/i);
+        });
+        it('should throw ECONNREFUSED', async () => {
+            const promise = connect({
+                port: 9999,
+                serverSelectionTimeoutMS: 100,
+            });
+            await expect(promise).to.be.rejectedWith(/connect ECONNREFUSED/i);
+        });
+        it('should throw server selection timed out', async () => {
+            const promise = connect({
+                serverSelectionTimeoutMS: 1,
+                reconnect: true,
+                // heartbeatFrequencyMS: 1000
+            });
+            await expect(promise).to.be.rejectedWith(/Server selection timed out/i);
+        });
         it('should bootstrap MongoDB connection amd disconnect', async () => {
             const db = await connect();
             expect(db.isConnected).to.be.true;
             await db.close();
             expect(db.isConnected).to.be.false;
-        });
-        it.skip('should connectTimeoutMS', async () => {
-            const promise = connect({ connectTimeoutMS: 500 });
-
-            await expect(promise).to.be.rejectedWith(/could not find/i);
         });
     });
     describe('delete', () => {

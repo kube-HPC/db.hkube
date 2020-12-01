@@ -54,6 +54,17 @@ describe('Algorithms', () => {
         const res = await db.algorithms.fetch({ name });
         expect(res).to.eql({ ...algorithm, ...params });
     });
+    it('should create and patch nested prop', async () => {
+        const db = await connect();
+        const algorithm = generateAlgorithm();
+        const name = algorithm.name;
+        const params = { name, options: { debug: true } };
+        await db.algorithms.create(algorithm);
+        await db.algorithms.patch(params);
+        const res = await db.algorithms.fetch({ name });
+        expect(res.options.debug).to.eql(true);
+        expect(res.options.pending).to.eql(false);
+    });
     it('should create and delete algorithm with dependencies', async () => {
         const db = await connect();
         const algorithm = generateAlgorithm();

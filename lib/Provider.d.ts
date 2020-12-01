@@ -1,6 +1,6 @@
 import { PipelinesInterface } from './Pipeline';
 import { DataSourcesInterface } from './DataSource';
-import { AlgorithmsInterface } from './algorithms/Algorithm';
+import { AlgorithmsInterface } from './Algorithm';
 
 export interface ProviderInterface {
     init(): Promise<void>;
@@ -9,4 +9,9 @@ export interface ProviderInterface {
     dataSources: DataSourcesInterface;
     pipelines: PipelinesInterface;
     algorithms: AlgorithmsInterface;
+    jobs: AlgorithmsInterface;
+    experiments: AlgorithmsInterface;
+    tensorboards: AlgorithmsInterface;
+    readme: AlgorithmsInterface;
+    webhooks: AlgorithmsInterface;
 }
