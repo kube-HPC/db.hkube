@@ -11,6 +11,7 @@ export type FileMeta = {
     type: string;
     /** An extra text content the user can upload per file */
     description?: string;
+    uploadedAt: number
 };
 
 export type DataSource = {
