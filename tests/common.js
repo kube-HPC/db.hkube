@@ -152,8 +152,8 @@ const generateExperiment = () => ({
     description: 'this is new description for new experiment',
 });
 
-const generateAlgorithmReadme = () => ({
-    name: uuid.v4(),
+const generateAlgorithmReadme = algorithm => ({
+    name: algorithm?.name || uuid.v4(),
     data: `
     algorithm    
     Options:    

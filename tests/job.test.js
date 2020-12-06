@@ -3,10 +3,10 @@ const connect = require('./connect');
 const { generateJob, generateGraph } = require('./common');
 
 describe('Jobs', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
-        const promise = db.jobs.fetch({ jobId: 'no_such' });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.jobs.fetch({ jobId: 'no_such' });
+        expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
         const db = await connect();
@@ -14,11 +14,6 @@ describe('Jobs', () => {
         await db.jobs.create(job);
         const promise = db.jobs.create(job);
         await expect(promise).to.be.rejectedWith(/could not create/i);
-    });
-    it('should throw for itemNotFound on patch', async () => {
-        const db = await connect();
-        const promise = db.jobs.patch({ jobId: 'no-such' });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
     });
     it('should create and fetch job', async () => {
         const db = await connect();
@@ -68,10 +63,10 @@ describe('Jobs', () => {
         await db.jobs.create(job);
         const res1 = await db.jobs.fetch({ jobId });
         const res2 = await db.jobs.delete({ jobId });
-        const promise = db.jobs.fetch({ jobId });
+        const response = await db.jobs.fetch({ jobId });
         expect(res1).to.eql(job);
         expect(res2).to.eql({ deleted: 1 });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        expect(response).to.be.null;
     });
     it('should create and patch job status', async () => {
         const db = await connect();

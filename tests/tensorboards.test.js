@@ -3,11 +3,11 @@ const connect = require('./connect');
 const { generateTensorboard } = require('./common');
 
 describe('Tensorboards', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
         const board = generateTensorboard();
-        const promise = db.tensorboards.fetch(board);
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.tensorboards.fetch(board);
+        expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
         const db = await connect();
@@ -50,10 +50,10 @@ describe('Tensorboards', () => {
         await db.tensorboards.create(board);
         const res1 = await db.tensorboards.fetch({ id });
         const res2 = await db.tensorboards.delete({ id });
-        const promise = db.tensorboards.fetch({ id });
+        const response = await db.tensorboards.fetch({ id });
         expect(res1).to.eql(board);
         expect(res2).to.eql({ deleted: 1 });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        expect(response).to.be.null;
     });
     it('should create and fetch board list', async () => {
         const db = await connect();

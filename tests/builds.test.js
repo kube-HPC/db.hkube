@@ -3,14 +3,12 @@ const connect = require('./connect');
 const { generateAlgorithm, generateBuild } = require('./common');
 
 describe('Builds', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
-        const promise = db.algorithms.builds.fetch({
-            buildId: build.buildId,
-        });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.algorithms.builds.fetch({ buildId: build.buildId });
+        expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
         const db = await connect();
@@ -63,10 +61,10 @@ describe('Builds', () => {
         await db.algorithms.builds.create(build);
         const res1 = await db.algorithms.builds.fetch(build);
         const res2 = await db.algorithms.builds.delete(build);
-        const promise = db.algorithms.builds.fetch(build);
+        const response = await db.algorithms.builds.fetch(build);
         expect(res1).to.eql(build);
         expect(res2).to.eql({ deleted: 1 });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        expect(response).to.be.null;
     });
     it('should create and fetch build list', async () => {
         const db = await connect();

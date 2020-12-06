@@ -47,14 +47,14 @@ describe('MongoDB', () => {
         it('should throw ENOTFOUND', async () => {
             const promise = connect({
                 host: 'no_such_host',
-                serverSelectionTimeoutMS: 100,
+                serverSelectionTimeoutMS: 500,
             });
             await expect(promise).to.be.rejectedWith(/getaddrinfo ENOTFOUND/i);
         });
         it('should throw ECONNREFUSED', async () => {
             const promise = connect({
                 port: 9999,
-                serverSelectionTimeoutMS: 100,
+                serverSelectionTimeoutMS: 500,
             });
             await expect(promise).to.be.rejectedWith(/connect ECONNREFUSED/i);
         });
@@ -94,15 +94,16 @@ describe('MongoDB', () => {
         });
         it('should throw not found error if on non existing id', async () => {
             const db = await connect();
-            await expect(db.dataSources.delete({ id: nonExistingId })).to.be.rejectedWith(
-                /could not find/i
-            );
+            const response = db.dataSources.delete({ id: nonExistingId }, { allowNotFound: false });
+            await expect(response).to.be.rejectedWith(/could not find/i);
         });
         it('should return null for non existing id if allowNotFound', async () => {
             const db = await connect();
-            await expect(
-                db.dataSources.delete({ id: nonExistingId }, { allowNotFound: true })
-            ).to.eventually.eq(null);
+            const response = await db.dataSources.delete(
+                { id: nonExistingId },
+                { allowNotFound: true }
+            );
+            expect(response).to.eql({ deleted: 0 });
         });
     });
     describe('fetch', () => {
@@ -154,9 +155,16 @@ describe('MongoDB', () => {
         });
         it('should throw not found error for non existing id', async () => {
             const db = await connect();
-            await expect(db.dataSources.fetch({ id: nonExistingId })).to.be.rejectedWith(
-                /could not find/i
+            const promise = db.dataSources.fetch({ id: nonExistingId }, { allowNotFound: false });
+            await expect(promise).to.be.rejectedWith(/could not find/i);
+        });
+        it('should not throw not found error for non existing id', async () => {
+            const db = await connect();
+            const promise = await db.dataSources.fetch(
+                { id: nonExistingId },
+                { allowNotFound: true }
             );
+            expect(promise).to.be.null;
         });
         it('should fetch many by id', async () => {
             const db = await connect();

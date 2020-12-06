@@ -3,11 +3,11 @@ const connect = require('./connect');
 const { generateWebhook } = require('./common');
 
 describe('Webhooks-Status', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
         const webhook = generateWebhook();
-        const promise = db.webhooks.status.fetch(webhook);
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.webhooks.status.fetch(webhook);
+        expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
         const db = await connect();
@@ -44,22 +44,14 @@ describe('Webhooks-Status', () => {
         const res = await db.webhooks.status.fetch({ jobId });
         expect(res).to.eql({ ...webhook, ...params });
     });
-    it('should create and upsert webhook', async () => {
-        const db = await connect();
-        const webhook = generateWebhook();
-        const { jobId } = webhook;
-        await db.webhooks.status.upsert(webhook);
-        const res = await db.webhooks.status.fetch({ jobId });
-        expect(res).to.eql(webhook);
-    });
     it('should create and delete webhook', async () => {
         const db = await connect();
         const webhook = generateWebhook();
         const { jobId } = webhook;
         await db.webhooks.status.create(webhook);
         await db.webhooks.status.delete({ jobId });
-        const promise = db.webhooks.status.fetch({ jobId });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.webhooks.status.fetch({ jobId });
+        expect(response).to.be.null;
     });
     it('should create and fetch webhook list', async () => {
         const db = await connect();

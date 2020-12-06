@@ -3,10 +3,10 @@ const connect = require('./connect');
 const { generateExperiment } = require('./common');
 
 describe('Experiments', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
-        const promise = db.experiments.fetch({ name: 'no_such' });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.experiments.fetch({ name: 'no_such' });
+        expect(response).to.be.null;
     });
     it('should create and fetch experiment', async () => {
         const db = await connect();
@@ -32,10 +32,10 @@ describe('Experiments', () => {
         await db.experiments.create(experiment);
         const res1 = await db.experiments.fetch({ name });
         const res2 = await db.experiments.delete({ name });
-        const promise = db.experiments.fetch({ name });
+        const response = await db.experiments.fetch({ name });
         expect(res1).to.eql(experiment);
         expect(res2).to.eql({ deleted: 1 });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        expect(response).to.be.null;
     });
     it('should create and fetch version list', async () => {
         const db = await connect();

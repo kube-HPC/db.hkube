@@ -3,11 +3,11 @@ const connect = require('./connect');
 const { generatePipeline } = require('./common');
 
 describe('Pipelines', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
         const pipeline = generatePipeline();
-        const promise = db.pipelines.fetch(pipeline);
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.pipelines.fetch(pipeline);
+        expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
         const db = await connect();
@@ -49,8 +49,8 @@ describe('Pipelines', () => {
         const name = pipeline.name;
         await db.pipelines.create(pipeline);
         await db.pipelines.delete({ name });
-        const promise = db.pipelines.fetch({ name });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.pipelines.fetch({ name });
+        expect(response).to.be.null;
     });
     it('should create and fetch pipeline list', async () => {
         const db = await connect();

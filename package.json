@@ -16,6 +16,7 @@
     "author": "Reggev Amsalem",
     "license": "ISC",
     "dependencies": {
+        "lodash.clonedeep": "^4.5.0",
         "lodash.merge": "^4.6.2",
         "mongodb": "^3.6.3"
     },

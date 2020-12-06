@@ -3,12 +3,12 @@ const connect = require('./connect');
 const { generateAlgorithm, generateVersion } = require('./common');
 
 describe('Versions', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
         const algorithm = generateAlgorithm();
         const version = generateVersion(algorithm);
-        const promise = db.algorithms.versions.fetch(version);
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.algorithms.versions.fetch(version);
+        expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
         const db = await connect();
@@ -126,9 +126,9 @@ describe('Versions', () => {
         await db.algorithms.versions.create(version);
         const res1 = await db.algorithms.versions.fetch(version);
         const res2 = await db.algorithms.versions.delete(version);
-        const promise = db.algorithms.versions.fetch(version);
+        const response = await db.algorithms.versions.fetch(version);
         expect(res1).to.eql(version);
         expect(res2).to.eql({ deleted: 1 });
-        await expect(promise).to.be.rejectedWith(/could not find version/i);
+        expect(response).to.be.null;
     });
 });

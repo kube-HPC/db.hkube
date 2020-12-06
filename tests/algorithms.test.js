@@ -1,14 +1,19 @@
 const { expect } = require('chai');
 const uuid = require('uuid');
 const connect = require('./connect');
-const { generateAlgorithm, generateVersion, generateBuild } = require('./common');
+const {
+    generateAlgorithm,
+    generateVersion,
+    generateBuild,
+    generateAlgorithmReadme,
+} = require('./common');
 
 describe('Algorithms', () => {
-    it('should throw error itemNotFound', async () => {
+    it('should not throw error itemNotFound', async () => {
         const db = await connect();
         const algorithm = generateAlgorithm();
-        const promise = db.algorithms.fetch(algorithm);
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const response = await db.algorithms.fetch(algorithm);
+        expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
         const db = await connect();
@@ -24,7 +29,7 @@ describe('Algorithms', () => {
         const res2 = await db.algorithms.fetch({ name: algorithm.name });
         expect(res1).to.eql(res2);
     });
-    it('should create and fetch many', async () => {
+    it('should create many', async () => {
         const db = await connect();
         const cpu = Math.random() * 1000;
         const algorithm1 = generateAlgorithm({ cpu });
@@ -32,6 +37,18 @@ describe('Algorithms', () => {
         const algorithm3 = generateAlgorithm({ cpu });
         const res1 = await db.algorithms.createMany([algorithm1, algorithm2, algorithm3]);
         const res2 = await db.algorithms.fetchAll({ query: { cpu } });
+        expect(res1.inserted).to.eql(res2.length);
+    });
+    it.skip('should update many', async () => {
+        const db = await connect();
+        const cpu = Math.random() * 1000;
+        const algorithm1 = generateAlgorithm({ cpu });
+        const algorithm2 = generateAlgorithm({ cpu });
+        const res1 = await db.algorithms.createMany([algorithm1, algorithm2]);
+        algorithm1.cpu = 5;
+        algorithm2.cpu = 5;
+        const res2 = await db.algorithms.updateMany([algorithm1, algorithm2]);
+        const res3 = await db.algorithms.fetchAll({ query: { cpu } });
         expect(res1.inserted).to.eql(res2.length);
     });
     it('should create and update algorithm', async () => {
@@ -68,32 +85,21 @@ describe('Algorithms', () => {
     it('should create and delete algorithm with dependencies', async () => {
         const db = await connect();
         const algorithm = generateAlgorithm();
-        const name = algorithm.name;
         const version1 = generateVersion(algorithm);
         const version2 = generateVersion(algorithm);
         const build1 = generateBuild(algorithm);
         const build2 = generateBuild(algorithm);
+        const readme = generateAlgorithmReadme(algorithm);
 
         await db.algorithms.create(algorithm);
         await db.algorithms.versions.create(version1);
         await db.algorithms.versions.create(version2);
         await db.algorithms.builds.create(build1);
         await db.algorithms.builds.create(build2);
+        await db.algorithms.readme.create(readme);
 
-        const res1 = await db.algorithms.fetch({ name });
-        const versions1 = await db.algorithms.versions.fetchAll({ query: { name } });
-        const builds1 = await db.algorithms.builds.fetchAll({ query: { algorithmName: name } });
-        const res2 = await db.algorithms.delete({ name });
-        const versions2 = await db.algorithms.versions.fetchAll({ query: { name } });
-        const builds2 = await db.algorithms.builds.fetchAll({ query: { algorithmName: name } });
-        const promise = db.algorithms.fetch({ name });
-        expect(versions1).to.have.lengthOf(2);
-        expect(builds1).to.have.lengthOf(2);
-        expect(versions2).to.have.lengthOf(0);
-        expect(builds2).to.have.lengthOf(0);
-        expect(res1).to.eql(algorithm);
-        expect(res2).to.eql({ deleted: 5 });
-        await expect(promise).to.be.rejectedWith(/could not find/i);
+        const res = await db.algorithms.delete({ name: algorithm.name });
+        expect(res).to.eql({ algorithms: 1, versions: 2, builds: 2, readme: 1 });
     });
     it('should create and fetch algorithm list by query', async () => {
         const db = await connect();
