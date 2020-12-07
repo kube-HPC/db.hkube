@@ -19,7 +19,6 @@ const connect = async (config = {}, provider = undefined) => {
                 host: config.host || process.env.DB_HOST,
                 port: config.port || parseInt(process.env.DB_PORT, 10),
                 dbName: process.env.DB_NAME,
-                useUnifiedTopology: true,
                 ...config,
             },
         },

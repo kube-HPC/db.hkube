@@ -31,7 +31,7 @@ describe('Webhooks-Result', () => {
         const params = { ttl: 60 };
         await db.webhooks.result.create(webhook);
         await db.webhooks.result.update({ ...params, jobId });
-        const res = await db.webhooks.result.fetch({ jobId });
+        const { timestamp, ...res } = await db.webhooks.result.fetch({ jobId });
         expect(res).to.eql({ ...webhook, ...params });
     });
     it('should create and patch webhook', async () => {

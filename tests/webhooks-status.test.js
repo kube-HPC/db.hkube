@@ -31,7 +31,7 @@ describe('Webhooks-Status', () => {
         const params = { ttl: 60 };
         await db.webhooks.status.create(webhook);
         await db.webhooks.status.update({ ...params, jobId });
-        const res = await db.webhooks.status.fetch({ jobId });
+        const { timestamp, ...res } = await db.webhooks.status.fetch({ jobId });
         expect(res).to.eql({ ...webhook, ...params });
     });
     it('should create and patch webhook', async () => {

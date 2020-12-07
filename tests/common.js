@@ -46,6 +46,7 @@ const generateBuild = (algorithm, progress) => ({
 
 const generatePipeline = () => ({
     name: `pipeline-${uuid.v4()}`,
+    experimentName: `experimentName-${uuid.v4()}`,
     nodes: [
         {
             nodeName: 'green',
@@ -73,6 +74,7 @@ const generatePipeline = () => ({
         batchTolerance: 30,
         progressVerbosityLevel: 'debug',
     },
+    types: ['stored', 'cron', 'stream'],
 });
 
 const generateGraph = () => ({
@@ -214,7 +216,6 @@ const generateTensorboard = () => ({
 const generateWebhook = () => ({
     jobId: uuid.v4(),
     type: 'progress',
-    timestamp: '2020-11-29T13:26:03.431Z',
     url: 'http://my-url-to-progress',
     pipelineStatus: 'pending',
     responseStatus: 'failed',
