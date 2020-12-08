@@ -1,6 +1,6 @@
 {
     "name": "@hkube/db",
-    "version": "1.0.14",
+    "version": "1.0.15",
     "description": "db api for HKube",
     "main": "index.js",
     "scripts": {
