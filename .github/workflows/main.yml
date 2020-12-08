@@ -4,11 +4,11 @@ name: CI
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  # Triggers the workflow on push or pull request events but only for the main branch
   pull_request:
-    branches: [master]
+    branches: [main]
   push:
-    branches: [master]
+    branches: [main]
     
   workflow_dispatch:
 
@@ -37,7 +37,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
   publish:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +50,7 @@ jobs:
         run: |
           git checkout -f -b version-branch
           npm version patch --no-commit-hooks -m "$(git log -1 --pretty=%B) .... bump version [skip ci]"
-          git push origin version-branch:master --follow-tags
+          git push origin version-branch:main --follow-tags
       - uses: actions/setup-node@v1
         with:
           node-version: 14
