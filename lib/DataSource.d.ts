@@ -11,7 +11,7 @@ export type FileMeta = {
     type: string;
     /** An extra text content the user can upload per file */
     description?: string;
-    uploadedAt: number
+    uploadedAt: number;
 };
 
 export type DataSource = {
@@ -33,6 +33,8 @@ export type DataSourceMeta = {
     totalSize: number;
     fileTypes: string[];
 };
+
+export type DataSourceWithMeta = DataSource & DataSourceMeta;
 
 export interface DataSourcesInterface {
     create(props: { name: string }): Promise<DataSource>;
