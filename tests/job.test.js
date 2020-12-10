@@ -66,7 +66,7 @@ describe('Jobs', () => {
         const pipelineType = jobData.pipeline.types[1];
         const algorithmName = jobData.pipeline.nodes[1].algorithmName;
         await db.jobs.create(jobData);
-        const response = await db.jobs.fetchByParams({
+        const response = await db.jobs.search({
             experimentName,
             pipelineName,
             pipelineType,
@@ -83,7 +83,7 @@ describe('Jobs', () => {
         const pipelineType = jobData.pipeline.types[1];
         const algorithmName = jobData.pipeline.nodes[1].algorithmName;
         await db.jobs.create(jobData);
-        const response = await db.jobs.fetchByParams({
+        const response = await db.jobs.search({
             experimentName,
             pipelineName,
             pipelineType,
