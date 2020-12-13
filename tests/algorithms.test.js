@@ -101,6 +101,23 @@ describe('Algorithms', () => {
         const res = await db.algorithms.delete({ name: algorithm.name });
         expect(res).to.eql({ algorithms: 1, versions: 2, builds: 2, readme: 1 });
     });
+    it('should create and search algorithms', async () => {
+        const db = await connect();
+        const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid.v4()}` });
+        const algorithm2 = generateAlgorithm({ name: `alg-blue-${uuid.v4()}` });
+        const algorithm3 = generateAlgorithm({ name: `alg-green-${uuid.v4()}` });
+        await db.algorithms.create(algorithm1);
+        await db.algorithms.create(algorithm2);
+        await db.algorithms.create(algorithm3);
+        const list1 = await db.algorithms.search({
+            name: 'green',
+        });
+        const list2 = await db.algorithms.search({
+            name: 'blue',
+        });
+        expect(list1.length).to.be.greaterThan(0);
+        expect(list2.length).to.be.greaterThan(0);
+    });
     it('should create and fetch algorithm list by query', async () => {
         const db = await connect();
         const algorithm1 = generateAlgorithm({ cpu: 7, env: 'nodejs' });

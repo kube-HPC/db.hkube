@@ -58,7 +58,7 @@ describe('Jobs', () => {
         expect(res2).to.eql({ deleted: 1 });
         expect(response).to.be.null;
     });
-    it('should fetch running job by multi params', async () => {
+    it('should search running job by multi params', async () => {
         const db = await connect();
         const job = generateJob();
         const { result, ...jobData } = job;
@@ -71,12 +71,12 @@ describe('Jobs', () => {
             pipelineName,
             pipelineType,
             algorithmName,
-            isRunning: true,
+            hasResult: false,
         });
         expect(response).to.have.lengthOf(1);
         expect(response[0]).to.eql(jobData);
     });
-    it('should fetch not running job by multi params', async () => {
+    it('should search not running job by multi params', async () => {
         const db = await connect();
         const jobData = generateJob();
         const { experimentName, name: pipelineName } = jobData.pipeline;
@@ -88,7 +88,7 @@ describe('Jobs', () => {
             pipelineName,
             pipelineType,
             algorithmName,
-            isRunning: false,
+            hasResult: true,
         });
         expect(response).to.have.lengthOf(1);
         expect(response[0]).to.eql(jobData);

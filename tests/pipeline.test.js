@@ -23,6 +23,20 @@ describe('Pipelines', () => {
         const res2 = await db.pipelines.fetch({ name: pipeline.name });
         expect(res1).to.eql(res2);
     });
+    it('should create and search has pipelines triggers', async () => {
+        const db = await connect();
+        const pipeline = generatePipeline();
+        await db.pipelines.create(pipeline);
+        const list = await db.pipelines.search({ hasPipelinesTriggers: true });
+        expect(list.length).to.be.greaterThan(0);
+    });
+    it('should create and search triggers pipeline', async () => {
+        const db = await connect();
+        const pipeline = generatePipeline();
+        await db.pipelines.create(pipeline);
+        const list = await db.pipelines.search({ triggersPipeline: 'b' });
+        expect(list.length).to.be.greaterThan(0);
+    });
     it('should create and update pipeline', async () => {
         const db = await connect();
         const pipeline = generatePipeline();

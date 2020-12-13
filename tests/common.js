@@ -1,7 +1,7 @@
 const uuid = require('uuid');
 
 const generateAlgorithm = options => ({
-    name: `alg-${uuid.v4()}`,
+    name: options?.name || `alg-${uuid.v4()}`,
     algorithmImage: `hkube/algorithm-${uuid.v4()}`,
     cpu: options?.cpu || 1,
     mem: '256Mi',
@@ -73,6 +73,9 @@ const generatePipeline = () => ({
     options: {
         batchTolerance: 30,
         progressVerbosityLevel: 'debug',
+    },
+    triggers: {
+        pipelines: ['a', 'b', 'c'],
     },
     types: ['stored', 'cron', 'stream'],
 });
