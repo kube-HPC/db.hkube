@@ -36,6 +36,12 @@ export type DataSourceMeta = {
 
 export type DataSourceWithMeta = DataSource & DataSourceMeta;
 
+export type DataSourceVersion = {
+    _id: string;
+    versionDescription: string;
+    versionId: string;
+};
+
 export interface DataSourcesInterface {
     create(props: { name: string }): Promise<DataSource>;
     delete(
@@ -60,4 +66,5 @@ export interface DataSourcesInterface {
         versionId: string;
         files: { droppedIds?: string[]; mapping?: FileMeta[] };
     }): Promise<DataSource>;
+    listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
 }

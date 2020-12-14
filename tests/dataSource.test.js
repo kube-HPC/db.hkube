@@ -8,12 +8,15 @@ const { generateEntries } = require('./utils');
 /** @type {(amount?: number) => FileMeta[]} */
 const generateMockFiles = (amount = 4) =>
     new Array(amount).fill(0).map((file, ii) => ({
+        id: `file-${ii}`,
         name: `file-${ii}-${uuid.v4()}`,
         path: `path-${ii}`,
         size: 1,
         type: Math.random() > 0.5 ? 'csv' : 'md',
+        uploadedAt: new Date().getTime(),
     }));
 
+const versionId = 'my-hash';
 describe('DataSources', () => {
     it('should throw conflict error when name already exists', async () => {
         const db = await connect();
@@ -72,7 +75,8 @@ describe('DataSources', () => {
             const filesAdded = generateMockFiles();
             const uploadResponse = await db.dataSources.uploadFiles({
                 name,
-                filesAdded,
+                versionId,
+                files: { mapping: filesAdded },
             });
             expect(uploadResponse.files).to.have.lengthOf(4);
             expect(uploadResponse.files).to.eql(filesAdded);
@@ -83,21 +87,27 @@ describe('DataSources', () => {
             const name = uuid.v4();
             await db.dataSources.create({ name });
 
-            const filesAdded = generateMockFiles(3);
-            const [fileToDrop, fileToModify, fileToKeep] = filesAdded;
+            const filesMapping = generateMockFiles(3);
+            const [fileToDrop, fileToModify, fileToKeep] = filesMapping;
             /** @type {FileMeta} */
             const updatedFile = { ...fileToModify, path: 'new path' };
             const [newFile] = generateMockFiles(1);
 
             await db.dataSources.uploadFiles({
                 name,
-                filesAdded,
+                versionId,
+                files: {
+                    mapping: filesMapping,
+                },
             });
 
             const response = await db.dataSources.uploadFiles({
                 name,
-                filesAdded: [updatedFile, newFile],
-                filesDropped: [fileToDrop.name],
+                versionId,
+                files: {
+                    mapping: [updatedFile, newFile],
+                    droppedIds: [fileToDrop.name],
+                },
             });
             const { files } = response;
             expect(files).to.have.lengthOf(3);
@@ -113,7 +123,7 @@ describe('DataSources', () => {
             const name = uuid.v4();
             const createdResponse = await db.dataSources.create({ name });
             const newDescription = 'my new version';
-            const updateResponse = await db.dataSources.updateVersion({
+            const updateResponse = await db.dataSources.createVersion({
                 name,
                 versionDescription: newDescription,
             });
@@ -142,7 +152,7 @@ describe('DataSources', () => {
                     .fill(0)
                     .map((_, ii) => `update-${ii}`)
                     .map(newDescription =>
-                        db.dataSources.updateVersion({
+                        db.dataSources.createVersion({
                             name,
                             versionDescription: newDescription,
                         })
@@ -151,6 +161,33 @@ describe('DataSources', () => {
             const fetchResponse = await db.dataSources.fetch({ name });
             const latest = updates[updates.length - 1];
             expect(fetchResponse).to.eql(latest);
+        });
+        it('should list all the versions of a given dataSource', async () => {
+            const db = await connect();
+            const name = uuid.v4();
+            await db.dataSources.create({ name });
+            const versionIds = ['a', 'b', 'c', 'd'];
+            for await (let vId of versionIds) {
+                const nextVersion = await db.dataSources.createVersion({
+                    name,
+                    versionDescription: `created ${vId}`,
+                });
+                await db.dataSources.uploadFiles({
+                    id: nextVersion.id,
+                    versionId: vId,
+                    files: { droppedIds: [], mapping: [] },
+                });
+            }
+            const versionsResponse = await db.dataSources.listVersions({
+                name,
+            });
+            // all the created versions + the initial version
+            expect(versionsResponse).to.have.lengthOf(versionIds.length + 1);
+            versionsResponse.forEach(version => {
+                expect(version).to.haveOwnProperty('id');
+                expect(version).to.haveOwnProperty('versionDescription');
+                expect(version).to.haveOwnProperty('versionId');
+            });
         });
     });
     describe('fetch many', () => {
