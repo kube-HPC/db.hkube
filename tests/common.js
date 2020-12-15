@@ -157,6 +157,13 @@ const generateExperiment = () => ({
     description: 'this is new description for new experiment',
 });
 
+const generatePipelineDriver = () => ({
+    name: `pipeline-driver-${uuid.v4()}`,
+    image: 'hkube/pipeline-driver',
+    cpu: 0.15,
+    mem: 2048,
+});
+
 const generateAlgorithmReadme = algorithm => ({
     name: algorithm?.name || uuid.v4(),
     data: `
@@ -239,6 +246,7 @@ module.exports = {
     generateResult,
     generateJob,
     generateExperiment,
+    generatePipelineDriver,
     generateAlgorithmReadme,
     generatePipelineReadme,
     generateTensorboard,
