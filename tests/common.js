@@ -76,6 +76,10 @@ const generatePipeline = () => ({
     },
     triggers: {
         pipelines: ['a', 'b', 'c'],
+        cron: {
+            pattern: '* * * * *',
+            enable: true,
+        },
     },
     types: ['stored', 'cron', 'stream'],
 });

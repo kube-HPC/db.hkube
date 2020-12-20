@@ -30,12 +30,22 @@ describe('Pipelines', () => {
         const list = await db.pipelines.search({ hasPipelinesTriggers: true });
         expect(list.length).to.be.greaterThan(0);
     });
-    it('should create and search triggers pipeline', async () => {
+    it('should create and search pipeline triggers', async () => {
         const db = await connect();
         const pipeline = generatePipeline();
         await db.pipelines.create(pipeline);
         const list = await db.pipelines.search({ triggersPipeline: 'b' });
         expect(list.length).to.be.greaterThan(0);
+    });
+    it('should create and search cron triggers', async () => {
+        const db = await connect();
+        const pipeline = generatePipeline();
+        await db.pipelines.create(pipeline);
+        const list = await db.pipelines.search({
+            hasCronTriggers: true,
+            fields: { name: true, cron: 'triggers.cron.pattern' },
+        });
+        expect(list.every(l => l.cron !== null)).to.eql(true);
     });
     it('should create and update pipeline', async () => {
         const db = await connect();

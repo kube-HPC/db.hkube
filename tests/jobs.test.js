@@ -22,14 +22,6 @@ describe('Jobs', () => {
         const res2 = await db.jobs.fetch({ jobId: job.jobId });
         expect(res1).to.eql(res2);
     });
-    it('should create and fetch graph', async () => {
-        const db = await connect();
-        const job = generateJob();
-        const { jobId } = job;
-        await db.jobs.create(job);
-        const res = await db.jobs.fetchGraph({ jobId });
-        expect(res).to.eql({ jobId, ...job.graph });
-    });
     it('should create and fetch status', async () => {
         const db = await connect();
         const job = generateJob();
