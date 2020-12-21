@@ -44,7 +44,7 @@ describe('MongoDB', () => {
             });
             await expect(promise).to.be.rejectedWith(/Authentication failed/i);
         });
-        it('should throw ENOTFOUND', async () => {
+        it.skip('should throw ENOTFOUND', async () => {
             const promise = connect({
                 host: 'no_such_host',
                 serverSelectionTimeoutMS: 500,
