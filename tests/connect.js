@@ -13,13 +13,12 @@ const connect = async (config = {}, provider = undefined) => {
         {
             mongo: {
                 auth: {
-                    user: process.env.DB_USER_NAME,
-                    password: process.env.DB_PASSWORD,
+                    user: config.user || process.env.DB_USER_NAME,
+                    password: config.password || process.env.DB_PASSWORD,
                 },
-                host: process.env.DB_HOST,
-                port: parseInt(process.env.DB_PORT, 10),
+                host: config.host || process.env.DB_HOST,
+                port: config.port || parseInt(process.env.DB_PORT, 10),
                 dbName: process.env.DB_NAME,
-                useUnifiedTopology: true,
                 ...config,
             },
         },

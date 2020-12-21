@@ -36,8 +36,8 @@ describe('dataSource', () => {
         expect(fetchedById.versionDescription).to.eql('initial version');
         expect(fetchedById.files).to.exist;
         expect(fetchedById.files).to.have.lengthOf(0);
-        const deletedId = await db.dataSources.delete({ id: insertedId });
-        expect(deletedId).to.eq(insertedId);
+        const response = await db.dataSources.delete({ id: insertedId });
+        expect(response).to.eql({ deleted: 1 });
     });
     it('should list all the dataSources without their files list', async () => {
         const db = await connect();
@@ -58,8 +58,8 @@ describe('dataSource', () => {
         expect(dataSource.id).to.be.string;
         const fetchedByName = await db.dataSources.fetch({ name });
         expect(fetchedByName).to.eql(dataSource);
-        const deletedName = await db.dataSources.delete({ name });
-        expect(deletedName).to.eq(name);
+        const response = await db.dataSources.delete({ name });
+        expect(response).to.eql({ deleted: 1 });
     });
     it('should upload a list of files', async () => {
         const db = await connect();
@@ -128,10 +128,11 @@ describe('dataSource', () => {
         expect(updatedDescription).to.eql(newDescription);
         expect(updateResponse).not.to.haveOwnProperty('_id');
     });
-    xit('should fetch the latest version given name only', async () => {
+    it.skip('should fetch the latest version given name only', async () => {
         const db = await connect();
         const name = uuid.v4();
         await db.dataSources.create({ name });
+        // I think because this is parallel, you got an error sometimes...
         const updates = await Promise.all(
             new Array(4)
                 .fill(0)
