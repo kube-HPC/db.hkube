@@ -1,12 +1,12 @@
 import { PipelinesInterface } from './Pipeline';
-import { DataSourcesInterface } from './DataSource';
+import { DataSourcesCollection } from './DataSource';
 import { AlgorithmsInterface } from './Algorithm';
 
 export interface ProviderInterface {
     init(): Promise<void>;
     close(force?: boolean): Promise<void>;
     isConnected: boolean;
-    dataSources: DataSourcesInterface;
+    dataSources: DataSourcesCollection;
     pipelines: PipelinesInterface;
     algorithms: AlgorithmsInterface;
     jobs: AlgorithmsInterface;

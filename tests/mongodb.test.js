@@ -1,4 +1,3 @@
-const uuid = require('uuid');
 const { expect } = require('chai');
 const { v4: uuid } = require('uuid');
 const DBConnection = require('./../');
@@ -173,9 +172,7 @@ describe('Collection', () => {
         it('should throw missing ids and names', async () => {
             const db = await connect();
             const promise = db.pipelines.fetchMany({});
-            await expect(promise).to.be.rejectedWith(
-                'you did not provide names | ids'
-            );
+            await expect(promise).to.be.rejectedWith('you did not provide names | ids');
         });
         it('should fetch many by id', async () => {
             const db = await connect();

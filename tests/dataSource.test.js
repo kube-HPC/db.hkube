@@ -17,7 +17,7 @@ const generateMockFiles = (amount = 4) =>
     }));
 
 const versionId = 'my-hash';
-describe('DataSources', () => {
+describe.only('DataSources', () => {
     it('should throw conflict error when name already exists', async () => {
         const db = await connect();
         const name = uuid.v4();
@@ -58,10 +58,15 @@ describe('DataSources', () => {
         const response = await db.dataSources.delete({ name });
         expect(response).to.eql({ deleted: 1 });
     });
-    it('should list all the dataSources without their files list', async () => {
+    it('should list all the dataSources without their files list and avoid partial versions', async () => {
         const db = await connect();
         const name = uuid.v4();
-        await db.dataSources.create({ name });
+        const created = await db.dataSources.create({ name });
+        const firstFetch = await db.dataSources.fetchAll();
+        // at first it is marked as partial and should not be fetched
+        expect(firstFetch.find(item => item.id === created.id)).to.be.undefined;
+        // tags the dataSource as non partial and now should be listed
+        await db.dataSources.updateFiles({ id: created.id, files: [], versionId: 'no-version' });
         const entries = await db.dataSources.fetchAll();
         expect(entries.length).to.be.gte(1);
         expect(entries).not.to.all.keys('files');
@@ -71,50 +76,18 @@ describe('DataSources', () => {
             const db = await connect();
             const name = uuid.v4();
             const created = await db.dataSources.create({ name });
+            expect(created.isPartial).to.be.true;
             /** @type {FileMeta[]} */
             const filesAdded = generateMockFiles();
-            const uploadResponse = await db.dataSources.uploadFiles({
+            const uploadResponse = await db.dataSources.updateFiles({
                 name,
                 versionId,
-                files: { mapping: filesAdded },
+                files: filesAdded,
             });
             expect(uploadResponse.files).to.have.lengthOf(4);
             expect(uploadResponse.files).to.eql(filesAdded);
             expect(uploadResponse.id).to.eq(created.id);
-        });
-        it('should upload 2 files, update 1, add 1 more and delete 1', async () => {
-            const db = await connect();
-            const name = uuid.v4();
-            await db.dataSources.create({ name });
-
-            const filesMapping = generateMockFiles(3);
-            const [fileToDrop, fileToModify, fileToKeep] = filesMapping;
-            /** @type {FileMeta} */
-            const updatedFile = { ...fileToModify, path: 'new path' };
-            const [newFile] = generateMockFiles(1);
-
-            await db.dataSources.uploadFiles({
-                name,
-                versionId,
-                files: {
-                    mapping: filesMapping,
-                },
-            });
-
-            const response = await db.dataSources.uploadFiles({
-                name,
-                versionId,
-                files: {
-                    mapping: [updatedFile, newFile],
-                    droppedIds: [fileToDrop.name],
-                },
-            });
-            const { files } = response;
-            expect(files).to.have.lengthOf(3);
-            expect(files).to.deep.include(fileToKeep);
-            expect(files).to.deep.include(updatedFile);
-            expect(files).to.deep.include(newFile);
-            expect(files).not.to.deep.include(fileToDrop);
+            expect(uploadResponse.isPartial).to.be.false;
         });
     });
     describe('versioning', () => {
@@ -172,17 +145,17 @@ describe('DataSources', () => {
                     name,
                     versionDescription: `created ${vId}`,
                 });
-                await db.dataSources.uploadFiles({
+                await db.dataSources.updateFiles({
                     id: nextVersion.id,
                     versionId: vId,
-                    files: { droppedIds: [], mapping: [] },
+                    files: generateMockFiles(),
                 });
             }
             const versionsResponse = await db.dataSources.listVersions({
                 name,
             });
             // all the created versions + the initial version
-            expect(versionsResponse).to.have.lengthOf(versionIds.length + 1);
+            expect(versionsResponse).to.have.lengthOf(versionIds.length);
             versionsResponse.forEach(version => {
                 expect(version).to.haveOwnProperty('id');
                 expect(version).to.haveOwnProperty('versionDescription');
@@ -194,15 +167,19 @@ describe('DataSources', () => {
         it('should throw missing ids and names', async () => {
             const db = await connect();
             const promise = db.dataSources.fetchMany({});
-            await expect(promise).to.be.rejectedWith(
-                'you did not provide names | ids'
-            );
+            await expect(promise).to.be.rejectedWith('you did not provide names | ids');
         });
         it('should fetch many by id', async () => {
             const db = await connect();
             const { entries } = generateEntries(5);
-            const created = await Promise.all(
-                entries.map(db.dataSources.create)
+            const created = await Promise.all(entries.map(entry => db.dataSources.create(entry)));
+            await Promise.all(
+                entries.map(entry =>
+                    db.dataSources.updateFiles({
+                        ...entry,
+                        versionId: 'upload',
+                    })
+                )
             );
             const ids = created.map(entry => entry.id);
             const response = await db.dataSources.fetchMany({ ids });
@@ -211,38 +188,47 @@ describe('DataSources', () => {
         it('should fetch many by name', async () => {
             const db = await connect();
             const { entries, names } = generateEntries(5);
-            await Promise.all(entries.map(db.dataSources.create));
+            await Promise.all(entries.map(entry => db.dataSources.create(entry)));
+            await Promise.all(
+                entries.map(entry =>
+                    db.dataSources.updateFiles({
+                        ...entry,
+                        versionId: 'upload',
+                    })
+                )
+            );
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
-    it.skip('should fetch the latest version given name only', async () => {
-        const db = await connect();
-        const name = uuid.v4();
-        await db.dataSources.create({ name });
-        // I think because this is parallel, you got an error sometimes...
-        const updates = await Promise.all(
-            new Array(4)
-                .fill(0)
-                .map((_, ii) => `update-${ii}`)
-                .map(newDescription =>
-                    db.dataSources.updateVersion({
-                        name,
-                        versionDescription: newDescription,
-                    })
-                )
-        );
-        const fetchResponse = await db.dataSources.fetch({ name });
-        const latest = updates[updates.length - 1];
-        expect(fetchResponse).to.eql(latest);
-    });
+        it.skip('should fetch the latest version given name only', async () => {
+            const db = await connect();
+            const name = uuid.v4();
+            await db.dataSources.create({ name });
+            // I think because this is parallel, you got an error sometimes...
+            const updates = await Promise.all(
+                new Array(4)
+                    .fill(0)
+                    .map((_, ii) => `update-${ii}`)
+                    .map(newDescription =>
+                        db.dataSources.updateVersion({
+                            name,
+                            versionDescription: newDescription,
+                        })
+                    )
+            );
+            const fetchResponse = await db.dataSources.fetch({ name });
+            const latest = updates[updates.length - 1];
+            expect(fetchResponse).to.eql(latest);
+        });
 
-    // it.only('should return all the dataSources metadata aggregation', async () => {
-    //     const db = await connect();
-    //     // const name = uuid.v4();
-    //     // const filesMeta = generateMockFiles(10);
-    //     // await db.dataSources.create({ name });
-    //     // await db.dataSources.uploadFiles({ name, filesAdded: filesMeta });
-    //     const all = await db.dataSources.fetchAll();
-    //     console.log(JSON.stringify(all, null, 2));
-    // });
+        // it.only('should return all the dataSources metadata aggregation', async () => {
+        //     const db = await connect();
+        //     // const name = uuid.v4();
+        //     // const filesMeta = generateMockFiles(10);
+        //     // await db.dataSources.create({ name });
+        //     // await db.dataSources.uploadFiles({ name, filesAdded: filesMeta });
+        //     const all = await db.dataSources.fetchAll();
+        //     console.log(JSON.stringify(all, null, 2));
+        // });
+    });
 });
