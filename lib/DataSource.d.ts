@@ -1,4 +1,8 @@
-import { Id } from './types';
+/*---------------------------------------------------------
+ * Copyright (C) Hkube. All rights reserved.
+ *--------------------------------------------------------*/
+import Collection from './MongoDB/Collection';
+import { Id } from './MongoDB/types';
 
 export type FileMeta = {
     id: string;
@@ -43,7 +47,7 @@ export type DataSourceVersion = {
     versionId: string;
 };
 
-export interface DataSourcesInterface {
+export interface DataSourcesCollection extends Collection<DataSource>, DataSourceOverrides {
     create(props: { name: string }): Promise<DataSource>;
     delete(
         props: { name?: string; id?: string },

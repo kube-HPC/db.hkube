@@ -41,8 +41,8 @@ describe('DataSources', () => {
         expect(fetchedById.versionDescription).to.eql('initial version');
         expect(fetchedById.files).to.exist;
         expect(fetchedById.files).to.have.lengthOf(0);
-        const deletedId = await db.dataSources.delete({ id: insertedId });
-        expect(deletedId).to.eq(insertedId);
+        const response = await db.dataSources.delete({ id: insertedId });
+        expect(response).to.eql({ deleted: 1 });
     });
     it('should create and fetch and delete a datasource by name', async () => {
         const db = await connect();
@@ -55,8 +55,8 @@ describe('DataSources', () => {
         expect(dataSource.id).to.be.string;
         const fetchedByName = await db.dataSources.fetch({ name });
         expect(fetchedByName).to.eql(dataSource);
-        const deletedName = await db.dataSources.delete({ name });
-        expect(deletedName).to.eq(name);
+        const response = await db.dataSources.delete({ name });
+        expect(response).to.eql({ deleted: 1 });
     });
     it('should list all the dataSources without their files list', async () => {
         const db = await connect();
@@ -215,6 +215,25 @@ describe('DataSources', () => {
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
+    it.skip('should fetch the latest version given name only', async () => {
+        const db = await connect();
+        const name = uuid.v4();
+        await db.dataSources.create({ name });
+        // I think because this is parallel, you got an error sometimes...
+        const updates = await Promise.all(
+            new Array(4)
+                .fill(0)
+                .map((_, ii) => `update-${ii}`)
+                .map(newDescription =>
+                    db.dataSources.updateVersion({
+                        name,
+                        versionDescription: newDescription,
+                    })
+                )
+        );
+        const fetchResponse = await db.dataSources.fetch({ name });
+        const latest = updates[updates.length - 1];
+        expect(fetchResponse).to.eql(latest);
     });
 
     // it.only('should return all the dataSources metadata aggregation', async () => {
