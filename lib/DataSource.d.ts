@@ -10,7 +10,7 @@ export type FileMeta = {
     /** Mime type */
     type: string;
     /** An extra text content the user can upload per file */
-    description?: string;
+    meta?: string;
     uploadedAt: number;
 };
 
@@ -62,11 +62,11 @@ export interface DataSourcesInterface {
         id?: Id;
         versionDescription: string;
     }): Promise<DataSource>;
-    uploadFiles(params: {
+    updateFiles(params: {
         name?: string;
         id?: Id;
         versionId: string;
-        files: { droppedIds?: string[]; mapping?: FileMeta[] };
+        files: FileMeta[];
     }): Promise<DataSource>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
 }
