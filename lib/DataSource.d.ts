@@ -18,6 +18,8 @@ export type FileMeta = {
     uploadedAt: number;
 };
 
+type Snapshot = { name: string; query: string };
+
 export type DataSource = {
     id?: Id;
     name: string;
@@ -27,6 +29,7 @@ export type DataSource = {
     versionId: string;
     files: FileMeta[];
     isPartial: boolean;
+    snapshots?: Snapshot[];
 };
 
 export type DataSourceMeta = {
@@ -50,6 +53,10 @@ export type DataSourceVersion = {
 export interface DataSourcesCollection extends Collection<DataSource>, DataSourceOverrides {
     create(props: { name: string }): Promise<DataSource>;
     fetchAll(): Promise<DataSourceMeta[]>;
+    fetch(
+        query: Partial<DataSource>,
+        props: { fields?: Partial<DataSource>; sort?: Partial<DataSource> }
+    ): Promise<DataSource>;
     createVersion(params: {
         name?: string;
         id?: Id;
@@ -62,4 +69,5 @@ export interface DataSourcesCollection extends Collection<DataSource>, DataSourc
         files: FileMeta[];
     }): Promise<DataSource>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
+    upsertSnapshot(params: { name?: string; id?: string; snapshot: Snapshot }): Promise<DataSource>;
 }
