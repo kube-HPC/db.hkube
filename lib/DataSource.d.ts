@@ -49,18 +49,7 @@ export type DataSourceVersion = {
 
 export interface DataSourcesCollection extends Collection<DataSource>, DataSourceOverrides {
     create(props: { name: string }): Promise<DataSource>;
-    delete(
-        props: { name?: string; id?: string },
-        options?: { allowNotFound?: boolean }
-    ): Promise<Id | null>;
-    fetch(params: {
-        id?: Id;
-        name?: string;
-        version?: string;
-        filters?: Partial<DataSource>;
-    }): Promise<DataSource>;
     fetchAll(): Promise<DataSourceMeta[]>;
-    fetchMany(params: { ids?: Id[]; names?: string[] }): Promise<DataSource[]>;
     createVersion(params: {
         name?: string;
         id?: Id;
