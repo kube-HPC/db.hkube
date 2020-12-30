@@ -62,12 +62,12 @@ describe.only('DataSources', () => {
         const db = await connect();
         const name = uuid.v4();
         const created = await db.dataSources.create({ name });
-        const firstFetch = await db.dataSources.fetchAll();
+        const firstFetch = await db.dataSources.listDataSources();
         // at first it is marked as partial and should not be fetched
         expect(firstFetch.find(item => item.id === created.id)).to.be.undefined;
         // tags the dataSource as non partial and now should be listed
         await db.dataSources.updateFiles({ id: created.id, files: [], versionId: 'no-version' });
-        const entries = await db.dataSources.fetchAll();
+        const entries = await db.dataSources.listDataSources();
         expect(entries.length).to.be.gte(1);
         expect(entries).not.to.all.keys('files');
     });
