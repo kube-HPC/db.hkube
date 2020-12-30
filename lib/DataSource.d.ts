@@ -52,7 +52,6 @@ export type DataSourceVersion = {
 
 export interface DataSourcesCollection extends Collection<DataSource>, DataSourceOverrides {
     create(props: { name: string }): Promise<DataSource>;
-    fetchAll(): Promise<DataSourceMeta[]>;
     fetch(
         query: Partial<DataSource>,
         props: { fields?: Partial<DataSource>; sort?: Partial<DataSource> }
@@ -68,6 +67,7 @@ export interface DataSourcesCollection extends Collection<DataSource>, DataSourc
         versionId: string;
         files: FileMeta[];
     }): Promise<DataSource>;
+    listDataSources(): Promise<DataSourceMeta[]>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
     upsertSnapshot(params: { name?: string; id?: string; snapshot: Snapshot }): Promise<DataSource>;
 }
