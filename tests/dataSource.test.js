@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const connect = require('./connect');
 const { generateEntries } = require('./utils');
 
@@ -9,7 +9,7 @@ const { generateEntries } = require('./utils');
 const generateMockFiles = (amount = 4) =>
     new Array(amount).fill(0).map((file, ii) => ({
         id: `file-${ii}`,
-        name: `file-${ii}-${uuid.v4()}`,
+        name: `file-${ii}-${uuid()}`,
         path: `path-${ii}`,
         size: 1,
         type: Math.random() > 0.5 ? 'csv' : 'md',
@@ -20,7 +20,7 @@ const versionId = 'my-hash';
 describe('DataSources', () => {
     it('should throw conflict error when name already exists', async () => {
         const db = await connect();
-        const name = uuid.v4();
+        const name = uuid();
         const firstResponse = await db.dataSources.create({ name });
         expect(firstResponse).to.be.string;
         const promise = db.dataSources.create({ name });
@@ -30,7 +30,7 @@ describe('DataSources', () => {
     });
     it('should create and fetch and delete a datasource by id', async () => {
         const db = await connect();
-        const name = uuid.v4();
+        const name = uuid();
         const { id: insertedId } = await db.dataSources.create({ name });
         expect(insertedId).to.be.string;
         const dataSource = await db.dataSources.fetch({ id: insertedId });
@@ -46,7 +46,7 @@ describe('DataSources', () => {
     });
     it('should create and fetch and delete a datasource by name', async () => {
         const db = await connect();
-        const name = uuid.v4();
+        const name = uuid();
         await db.dataSources.create({ name });
         const dataSource = await db.dataSources.fetch({ name });
         expect(dataSource.name).to.equal(name);
@@ -60,7 +60,7 @@ describe('DataSources', () => {
     });
     it('should list all the dataSources without their files list and avoid partial versions', async () => {
         const db = await connect();
-        const name = uuid.v4();
+        const name = uuid();
         const created = await db.dataSources.create({ name });
         const firstFetch = await db.dataSources.listDataSources();
         // at first it is marked as partial and should not be fetched
@@ -74,7 +74,7 @@ describe('DataSources', () => {
     describe('upload files', () => {
         it('should upload a list of files', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             const created = await db.dataSources.create({ name });
             expect(created.isPartial).to.be.true;
             /** @type {FileMeta[]} */
@@ -93,7 +93,7 @@ describe('DataSources', () => {
     describe('versioning', () => {
         it('should create a new version', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             const createdResponse = await db.dataSources.create({ name });
             const newDescription = 'my new version';
             const updateResponse = await db.dataSources.createVersion({
@@ -118,7 +118,7 @@ describe('DataSources', () => {
         });
         it('should fetch the latest version given name only', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             await db.dataSources.create({ name });
             const updates = await Promise.all(
                 new Array(4)
@@ -137,7 +137,7 @@ describe('DataSources', () => {
         });
         it('should list all the versions of a given dataSource', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             await db.dataSources.create({ name });
             const versionIds = ['a', 'b', 'c', 'd'];
             for await (let vId of versionIds) {
@@ -202,7 +202,7 @@ describe('DataSources', () => {
         });
         it.skip('should fetch the latest version given name only', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             await db.dataSources.create({ name });
             // I think because this is parallel, you got an error sometimes...
             const updates = await Promise.all(
@@ -223,7 +223,7 @@ describe('DataSources', () => {
 
         // it.only('should return all the dataSources metadata aggregation', async () => {
         //     const db = await connect();
-        //     // const name = uuid.v4();
+        //     // const name = uuid();
         //     // const filesMeta = generateMockFiles(10);
         //     // await db.dataSources.create({ name });
         //     // await db.dataSources.uploadFiles({ name, filesAdded: filesMeta });

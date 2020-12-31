@@ -1,8 +1,8 @@
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 const generateAlgorithm = options => ({
-    name: options?.name || `alg-${uuid.v4()}`,
-    algorithmImage: `hkube/algorithm-${uuid.v4()}`,
+    name: options?.name || `alg-${uuid()}`,
+    algorithmImage: `hkube/algorithm-${uuid()}`,
     cpu: options?.cpu || 1,
     mem: '256Mi',
     env: options?.env || 'python',
@@ -15,7 +15,7 @@ const generateAlgorithm = options => ({
 });
 
 const generateVersion = (algorithm, semver) => {
-    const version = uuid.v4();
+    const version = uuid();
     return {
         version,
         name: algorithm.name,
@@ -26,7 +26,7 @@ const generateVersion = (algorithm, semver) => {
 };
 
 const generateBuild = (algorithm, progress) => ({
-    buildId: uuid.v4(),
+    buildId: uuid(),
     imageTag: 'lfhge07l',
     algorithm,
     env: 'python',
@@ -45,27 +45,27 @@ const generateBuild = (algorithm, progress) => ({
 });
 
 const generatePipeline = () => ({
-    name: `pipeline-${uuid.v4()}`,
-    experimentName: `experimentName-${uuid.v4()}`,
+    name: `pipeline-${uuid()}`,
+    experimentName: `experimentName-${uuid()}`,
     nodes: [
         {
             nodeName: 'green',
-            algorithmName: `alg-${uuid.v4()}`,
+            algorithmName: `alg-${uuid()}`,
             input: ['@flowInput.files.link'],
         },
         {
             nodeName: 'yellow',
-            algorithmName: `alg-${uuid.v4()}`,
+            algorithmName: `alg-${uuid()}`,
             input: ['@green'],
         },
         {
             nodeName: 'black',
-            algorithmName: `alg-${uuid.v4()}`,
+            algorithmName: `alg-${uuid()}`,
             input: ['@yellow'],
         },
         {
             nodeName: 'white',
-            algorithmName: `alg-${uuid.v4()}`,
+            algorithmName: `alg-${uuid()}`,
             input: ['test'],
         },
     ],
@@ -88,17 +88,17 @@ const generateGraph = () => ({
     timestamp: Date.now(),
     nodes: [
         {
-            nodeName: `node-${uuid.v4()}`,
+            nodeName: `node-${uuid()}`,
             algorithmName: 'green-alg',
             input: [1, 2, true, '@data', '#@data', { obj: 'prop' }],
         },
         {
-            nodeName: `node-${uuid.v4()}`,
+            nodeName: `node-${uuid()}`,
             algorithmName: 'green-alg',
             input: [1, 2, true, '@green', '#@data', { obj: 'prop' }],
         },
         {
-            nodeName: `node-${uuid.v4()}`,
+            nodeName: `node-${uuid()}`,
             algorithmName: 'green-alg',
             input: [1, 2, true, '@yellow', '#@data', { obj: 'prop' }],
         },
@@ -125,7 +125,7 @@ const generateStatus = () => ({
     timestamp: new Date().toUTCString(),
     status: 'active',
     level: 'debug',
-    pipeline: `DAG-${uuid.v4()}`,
+    pipeline: `DAG-${uuid()}`,
     data: {
         progress: 0,
         states: {
@@ -138,7 +138,7 @@ const generateStatus = () => ({
 
 const generateResult = () => ({
     timestamp: new Date().toUTCString(),
-    pipeline: `DAG-${uuid.v4()}`,
+    pipeline: `DAG-${uuid()}`,
     data: {
         storageInfo: {
             path: 'local-hkube-results/main:DAG:7pn9ewgg/result.json',
@@ -149,7 +149,7 @@ const generateResult = () => ({
 });
 
 const generateJob = () => ({
-    jobId: `jobId-${uuid.v4()}`,
+    jobId: `jobId-${uuid()}`,
     pipeline: generatePipeline(),
     graph: generateGraph(),
     status: generateStatus(),
@@ -157,19 +157,19 @@ const generateJob = () => ({
 });
 
 const generateExperiment = () => ({
-    name: uuid.v4(),
+    name: uuid(),
     description: 'this is new description for new experiment',
 });
 
 const generatePipelineDriver = () => ({
-    name: `pipeline-driver-${uuid.v4()}`,
+    name: `pipeline-driver-${uuid()}`,
     image: 'hkube/pipeline-driver',
     cpu: 0.15,
     mem: 2048,
 });
 
 const generateAlgorithmReadme = algorithm => ({
-    name: algorithm?.name || uuid.v4(),
+    name: algorithm?.name || uuid(),
     data: `
     algorithm    
     Options:    
@@ -190,7 +190,7 @@ const generateAlgorithmReadme = algorithm => ({
 });
 
 const generatePipelineReadme = () => ({
-    name: uuid.v4(),
+    name: uuid(),
     data: `
     pipeline    
     Options:    
@@ -215,7 +215,7 @@ const generateTensorboard = () => ({
     boardReference: 'a178',
     endTime: null,
     error: null,
-    id: uuid.v4(),
+    id: uuid(),
     jobId: 'main:exec_pipeline:6kvq38gc',
     logDir: '/var/tmp/fs/storage/local-hkube-algo-metrics/',
     nodeName: 'A',
@@ -228,7 +228,7 @@ const generateTensorboard = () => ({
 });
 
 const generateWebhook = () => ({
-    jobId: uuid.v4(),
+    jobId: uuid(),
     type: 'progress',
     url: 'http://my-url-to-progress',
     pipelineStatus: 'pending',

@@ -1,8 +1,8 @@
 const { dummyFile } = require('./mocks');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 const generateEntries = amount => {
-    const names = new Array(amount).fill(0).map(() => uuid.v4());
+    const names = new Array(amount).fill(0).map(() => uuid());
     return {
         names,
         entries: names.map(name => ({ name, files: [dummyFile] })),

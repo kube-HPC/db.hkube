@@ -107,6 +107,16 @@ describe('Jobs', () => {
         const res = await db.jobs.fetch({ jobId });
         expect(res.status.level).to.eql(level);
     });
+    it('should create and update pipeline', async () => {
+        const db = await connect();
+        const job = generateJob();
+        const { jobId } = job;
+        const types = ['foo', 'bar'];
+        await db.jobs.create(job);
+        await db.jobs.updatePipeline({ jobId, types });
+        const res = await db.jobs.fetchPipeline({ jobId });
+        expect(res.types).to.eql(types);
+    });
     it('should create and fetch job list', async () => {
         const db = await connect();
         const job1 = generateJob();

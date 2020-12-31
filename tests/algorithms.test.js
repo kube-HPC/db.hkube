@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const connect = require('./connect');
 const {
     generateAlgorithm,
@@ -103,9 +103,9 @@ describe('Algorithms', () => {
     });
     it('should create and search algorithms', async () => {
         const db = await connect();
-        const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid.v4()}` });
-        const algorithm2 = generateAlgorithm({ name: `alg-blue-${uuid.v4()}` });
-        const algorithm3 = generateAlgorithm({ name: `alg-green-${uuid.v4()}` });
+        const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid()}` });
+        const algorithm2 = generateAlgorithm({ name: `alg-blue-${uuid()}` });
+        const algorithm3 = generateAlgorithm({ name: `alg-green-${uuid()}` });
         await db.algorithms.create(algorithm1);
         await db.algorithms.create(algorithm2);
         await db.algorithms.create(algorithm3);
@@ -138,7 +138,7 @@ describe('Algorithms', () => {
     });
     it('should create and fetch algorithm count', async () => {
         const db = await connect();
-        const env = `env-${uuid.v4()}`;
+        const env = `env-${uuid()}`;
         const algorithm1 = generateAlgorithm({ env });
         const algorithm2 = generateAlgorithm({ env });
         const algorithm3 = generateAlgorithm({ env });
