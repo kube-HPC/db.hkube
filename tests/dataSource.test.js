@@ -17,7 +17,7 @@ const generateMockFiles = (amount = 4) =>
     }));
 
 const versionId = 'my-hash';
-describe.only('DataSources', () => {
+describe('DataSources', () => {
     it('should throw conflict error when name already exists', async () => {
         const db = await connect();
         const name = uuid.v4();
