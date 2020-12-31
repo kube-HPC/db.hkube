@@ -13,7 +13,7 @@ export type ResolvedSnapshot = {
     id: Id;
     name: string;
     query: string;
-    datSource: DataSource;
+    dataSource: DataSource;
 };
 
 export interface SnapshotsCollection extends Collection<Snapshot>, SnapshotOverrides {
