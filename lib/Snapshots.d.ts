@@ -1,3 +1,4 @@
+import { DataSource } from './DataSource.d';
 import { Id } from './MongoDB/types';
 import Collection from './MongoDB/Collection';
 
@@ -8,6 +9,17 @@ type Snapshot = {
     dataSource: { id: string; name: string };
 };
 
+export type ResolvedSnapshot = {
+    id: Id;
+    name: string;
+    query: string;
+    datSource: DataSource;
+};
+
 export interface SnapshotsCollection extends Collection<Snapshot>, SnapshotOverrides {
     create(params: Snapshot): Promise<Snapshot>;
+    fetchDataSource(params: {
+        snapshotName: string;
+        dataSourceName: string;
+    }): Promise<ResolvedSnapshot>;
 }
