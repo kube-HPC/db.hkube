@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { v4: uuid } = require('uuid');
+const uuid = require('uuid').v4;
 const DBConnection = require('./../');
 const connect = require('./connect');
 const { ObjectID } = require('mongodb');
@@ -103,7 +103,7 @@ describe('Collection', () => {
     describe('fetch', () => {
         it('should create object with id', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             const created = await db.pipelines.create({ name }, { applyId: true });
             expect(created.name).to.eql(name);
             expect(created).to.have.property('id');
@@ -111,7 +111,7 @@ describe('Collection', () => {
         });
         it('should create object without id', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             const created = await db.pipelines.create({ name }, { applyId: false });
             expect(created.name).to.eql(name);
             expect(created).to.not.not.have.property('id');
@@ -179,7 +179,7 @@ describe('Collection', () => {
             const { entries } = generateEntries(5);
             const created = await Promise.all(entries.map(d => db.dataSources.create(d)));
             const ids = created.map(entry => entry.id);
-            const response = await db.pipelines.fetchMany({ ids });
+            const response = await db.dataSources.fetchMany({ ids });
             expect(response).to.have.lengthOf(5);
         });
         it('should fetch many by name', async () => {
