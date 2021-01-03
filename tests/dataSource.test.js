@@ -28,7 +28,7 @@ describe('DataSources', () => {
             'could not create dataSource, name is already taken'
         );
     });
-    it('should create and fetch and delete a datasource by id', async () => {
+    it.skip('should create and fetch and delete a datasource by id', async () => {
         const db = await connect();
         const name = uuid();
         const { id: insertedId } = await db.dataSources.create({ name });
