@@ -17,7 +17,7 @@ export type ResolvedSnapshot = Snapshot & {
 };
 
 export interface SnapshotsCollection extends Collection<Snapshot> {
-    create(params: Snapshot): Promise<Snapshot>;
+    create(params: Snapshot, setting: { applyId?: boolean }): Promise<Snapshot>;
     fetchDataSource(params: {
         snapshotName: string;
         dataSourceName: string;
