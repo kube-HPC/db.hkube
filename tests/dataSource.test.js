@@ -16,7 +16,7 @@ const generateMockFiles = (amount = 4) =>
         uploadedAt: new Date().getTime(),
     }));
 
-const versionId = 'my-hash';
+const commitHash = 'my-hash';
 describe('DataSources', () => {
     it('should throw conflict error when name already exists', async () => {
         const db = await connect();
@@ -66,7 +66,7 @@ describe('DataSources', () => {
         // at first it is marked as partial and should not be fetched
         expect(firstFetch.find(item => item.id === created.id)).to.be.undefined;
         // tags the dataSource as non partial and now should be listed
-        await db.dataSources.updateFiles({ id: created.id, files: [], versionId: 'no-version' });
+        await db.dataSources.updateFiles({ id: created.id, files: [], commitHash: 'no-version' });
         const entries = await db.dataSources.listDataSources();
         expect(entries.length).to.be.gte(1);
         expect(entries).not.to.all.keys('files');
@@ -81,7 +81,7 @@ describe('DataSources', () => {
             const filesAdded = generateMockFiles();
             const uploadResponse = await db.dataSources.updateFiles({
                 name,
-                versionId,
+                commitHash,
                 files: filesAdded,
             });
             expect(uploadResponse.files).to.have.lengthOf(4);
@@ -139,15 +139,15 @@ describe('DataSources', () => {
             const db = await connect();
             const name = uuid();
             await db.dataSources.create({ name });
-            const versionIds = ['a', 'b', 'c', 'd'];
-            for await (let vId of versionIds) {
+            const commitHashes = ['a', 'b', 'c', 'd'];
+            for await (let vId of commitHashes) {
                 const nextVersion = await db.dataSources.createVersion({
                     name,
                     versionDescription: `created ${vId}`,
                 });
                 await db.dataSources.updateFiles({
                     id: nextVersion.id,
-                    versionId: vId,
+                    commitHash: vId,
                     files: generateMockFiles(),
                 });
             }
@@ -155,11 +155,11 @@ describe('DataSources', () => {
                 name,
             });
             // all the created versions + the initial version
-            expect(versionsResponse).to.have.lengthOf(versionIds.length);
+            expect(versionsResponse).to.have.lengthOf(commitHashes.length);
             versionsResponse.forEach(version => {
                 expect(version).to.haveOwnProperty('id');
                 expect(version).to.haveOwnProperty('versionDescription');
-                expect(version).to.haveOwnProperty('versionId');
+                expect(version).to.haveOwnProperty('commitHash');
             });
         });
     });
@@ -177,7 +177,7 @@ describe('DataSources', () => {
                 entries.map(entry =>
                     db.dataSources.updateFiles({
                         ...entry,
-                        versionId: 'upload',
+                        commitHash: 'upload',
                     })
                 )
             );
@@ -193,7 +193,7 @@ describe('DataSources', () => {
                 entries.map(entry =>
                     db.dataSources.updateFiles({
                         ...entry,
-                        versionId: 'upload',
+                        commitHash: 'upload',
                     })
                 )
             );
