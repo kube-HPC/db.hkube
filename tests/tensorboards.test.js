@@ -41,7 +41,8 @@ describe('Tensorboards', () => {
         await db.tensorboards.create(board);
         await db.tensorboards.patch({ ...params, id });
         const res = await db.tensorboards.fetch({ id });
-        expect(res).to.eql({ ...board, ...params });
+        const { key, ...data } = res;
+        expect(data).to.eql({ ...board, ...params });
     });
     it('should create and delete board', async () => {
         const db = await connect();

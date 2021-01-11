@@ -11,6 +11,12 @@ const generateAlgorithm = options => ({
         pending: false,
     },
     minHotWorkers: 0,
+    'key.with.dot': {
+        'and.nested': 'bla'
+    },
+    envVars: {
+        'and.nested': 'bla'
+    },
     type: 'Image',
 });
 
@@ -42,6 +48,12 @@ const generateBuild = (algorithm, progress) => ({
     startTime: 1606063275506,
     data: null,
     timestamp: 1606063281438,
+    'key.with.dot': {
+        'and.nested': 'bla'
+    },
+    envVars: {
+        'and.nested': 'bla'
+    },
 });
 
 const generatePipeline = () => ({
@@ -80,6 +92,12 @@ const generatePipeline = () => ({
             pattern: '* * * * *',
             enable: true,
         },
+    },
+    'key.with.dot': {
+        'and.nested': 'bla'
+    },
+    envVars: {
+        'and.nested': 'bla'
     },
     types: ['stored', 'cron', 'stream'],
 });
@@ -225,6 +243,12 @@ const generateTensorboard = () => ({
     status: 'pending',
     taskId: 'A:eval-alg:d5c7ce6c-b8d9-4631-b9cb-95d25b268f06',
     type: 'task',
+    'key.with.dot': {
+        'and.nested': 'bla'
+    },
+    envVars: {
+        'and.nested': 'bla'
+    },
 });
 
 const generateWebhook = () => ({
@@ -238,6 +262,12 @@ const generateWebhook = () => ({
         statusMessage: 'getaddrinfo ENOTFOUND my-url-to-progress',
     },
     status: 'completed',
+    'key.with.dot': {
+        'and.nested': 'bla'
+    },
+    envVars: {
+        'and.nested': 'bla'
+    },
 });
 
 module.exports = {
