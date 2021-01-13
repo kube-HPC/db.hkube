@@ -8,29 +8,30 @@ const {
     generateAlgorithmReadme,
 } = require('./common');
 
+/** @type {import('../lib/Provider').ProviderInterface} */
+let db = null;
 describe('Algorithms', () => {
+    before(async () => {
+        db = await connect();
+    });
     it('should not throw error itemNotFound', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const response = await db.algorithms.fetch(algorithm);
         expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         await db.algorithms.create(algorithm);
         const promise = db.algorithms.create(algorithm);
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should create and fetch algorithm', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const res1 = await db.algorithms.create(algorithm);
         const res2 = await db.algorithms.fetch({ name: algorithm.name });
         expect(res1).to.eql(res2);
     });
     it('should create many', async () => {
-        const db = await connect();
         const cpu = Math.random() * 1000;
         const algorithm1 = generateAlgorithm({ cpu });
         const algorithm2 = generateAlgorithm({ cpu });
@@ -40,7 +41,6 @@ describe('Algorithms', () => {
         expect(res1.inserted).to.eql(res2.length);
     });
     it.skip('should update many', async () => {
-        const db = await connect();
         const cpu = Math.random() * 1000;
         const algorithm1 = generateAlgorithm({ cpu });
         const algorithm2 = generateAlgorithm({ cpu });
@@ -52,7 +52,6 @@ describe('Algorithms', () => {
         expect(res1.inserted).to.eql(res2.length);
     });
     it('should create and update algorithm', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const name = algorithm.name;
         const params = { cpu: 2, mem: '512Mi' };
@@ -62,7 +61,6 @@ describe('Algorithms', () => {
         expect(res).to.eql({ ...algorithm, ...params });
     });
     it('should create and patch algorithm', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const name = algorithm.name;
         const params = { cpu: 2, mem: '512Mi' };
@@ -73,7 +71,6 @@ describe('Algorithms', () => {
         expect(data).to.eql({ ...algorithm, ...params });
     });
     it('should create and patch nested prop', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const name = algorithm.name;
         const params = { name, options: { debug: true } };
@@ -84,7 +81,6 @@ describe('Algorithms', () => {
         expect(res.options.pending).to.eql(false);
     });
     it('should create and delete algorithm with dependencies', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const version1 = generateVersion(algorithm);
         const version2 = generateVersion(algorithm);
@@ -103,7 +99,6 @@ describe('Algorithms', () => {
         expect(res).to.eql({ algorithms: 1, versions: 2, builds: 2, readme: 1 });
     });
     it('should create and search algorithms', async () => {
-        const db = await connect();
         const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid()}` });
         const algorithm2 = generateAlgorithm({ name: `alg-blue-${uuid()}` });
         const algorithm3 = generateAlgorithm({ name: `alg-green-${uuid()}` });
@@ -120,7 +115,6 @@ describe('Algorithms', () => {
         expect(list2.length).to.be.greaterThan(0);
     });
     it('should create and fetch algorithm list by query', async () => {
-        const db = await connect();
         const algorithm1 = generateAlgorithm({ cpu: 7, env: 'nodejs' });
         const algorithm2 = generateAlgorithm({ cpu: 5, env: 'nodejs' });
         const algorithm3 = generateAlgorithm({ cpu: 9, env: 'nodejs' });
@@ -138,7 +132,6 @@ describe('Algorithms', () => {
         expect(list[0].cpu).to.eql(9);
     });
     it('should create and fetch algorithm count', async () => {
-        const db = await connect();
         const env = `env-${uuid()}`;
         const algorithm1 = generateAlgorithm({ env });
         const algorithm2 = generateAlgorithm({ env });

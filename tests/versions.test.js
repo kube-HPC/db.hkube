@@ -2,16 +2,20 @@ const { expect } = require('chai');
 const connect = require('./connect');
 const { generateAlgorithm, generateVersion } = require('./common');
 
+/** @type {import('../lib/Provider').ProviderInterface} */
+let db = null;
+
 describe('Versions', () => {
+    before(async () => {
+        db = await connect();
+    });
     it('should not throw error itemNotFound', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const version = generateVersion(algorithm);
         const response = await db.algorithms.versions.fetch(version);
         expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const version = generateVersion(algorithm);
         await db.algorithms.versions.create(version);
@@ -19,7 +23,6 @@ describe('Versions', () => {
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should create and fetch version', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const version1 = generateVersion(algorithm);
         const version2 = generateVersion(algorithm);
@@ -29,7 +32,6 @@ describe('Versions', () => {
         expect(res).to.eql(version1);
     });
     it('should create and fetch versions with sort asc and limit', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const version1 = generateVersion(algorithm, 3);
         const version2 = generateVersion(algorithm, 4);
@@ -51,7 +53,6 @@ describe('Versions', () => {
         expect(resMap).to.eql(verMap);
     });
     it('should create and fetch versions with sort desc and limit', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const version1 = generateVersion(algorithm, 3);
         const version2 = generateVersion(algorithm, 4);
@@ -73,7 +74,6 @@ describe('Versions', () => {
         expect(resMap).to.eql(verMap);
     });
     it('should create and update version', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm({ cpu: 100 });
         const newVersion = generateVersion(algorithm);
         const { name, version } = newVersion;
@@ -102,7 +102,6 @@ describe('Versions', () => {
         expect(res2.pinned).to.eql(false);
     });
     it('should create and patch version', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const newVersion = generateVersion(algorithm);
         const { name, version } = newVersion;
@@ -119,7 +118,6 @@ describe('Versions', () => {
         expect(res.pinned).to.eql(true);
     });
     it('should create and delete version', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const version = generateVersion(algorithm);
         algorithm.version = version.version;
