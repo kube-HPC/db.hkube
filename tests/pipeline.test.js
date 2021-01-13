@@ -57,6 +57,16 @@ describe('Pipelines', () => {
         const res = await db.pipelines.fetch({ name });
         expect(res).to.eql({ ...pipeline, ...params });
     });
+    it('should create and replace pipeline', async () => {
+        const db = await connect();
+        const pipeline1 = generatePipeline();
+        const pipeline2 = generatePipeline();
+        const name = pipeline1.name;
+        await db.pipelines.create(pipeline1);
+        await db.pipelines.replace({ ...pipeline2, name });
+        const response = await db.pipelines.fetch({ name });
+        expect(response).to.eql({ ...pipeline2, name });
+    });
     it('should create and patch pipeline', async () => {
         const db = await connect();
         const pipeline = generatePipeline();
@@ -65,7 +75,8 @@ describe('Pipelines', () => {
         await db.pipelines.create(pipeline);
         await db.pipelines.patch({ ...params, name });
         const res = await db.pipelines.fetch({ name });
-        expect(res).to.eql({ ...pipeline, ...params });
+        const { key, ...data } = res;
+        expect(data).to.eql({ ...pipeline, ...params });
     });
     it('should create and delete pipeline', async () => {
         const db = await connect();
