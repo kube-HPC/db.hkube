@@ -2,21 +2,24 @@ const { expect } = require('chai');
 const connect = require('./connect');
 const { generatePipelineDriver } = require('./common');
 
+/** @type {import('../lib/Provider').ProviderInterface} */
+let db = null;
+
 describe('PipelineDrivers', () => {
+    before(async () => {
+        db = await connect();
+    });
     it('should not throw error itemNotFound', async () => {
-        const db = await connect();
         const response = await db.pipelineDrivers.fetch({ name: 'no_such' });
         expect(response).to.be.null;
     });
     it('should create and fetch pipelineDriver', async () => {
-        const db = await connect();
         const pipelineDriver = generatePipelineDriver();
         await db.pipelineDrivers.create(pipelineDriver);
         const res = await db.pipelineDrivers.fetch(pipelineDriver);
         expect(res).to.eql(pipelineDriver);
     });
     it('should create and update pipelineDriver', async () => {
-        const db = await connect();
         const pipelineDriver = generatePipelineDriver();
         const name = pipelineDriver.name;
         const cpu = 5;
@@ -26,7 +29,6 @@ describe('PipelineDrivers', () => {
         expect(res.cpu).to.eql(cpu);
     });
     it('should create and delete pipelineDriver', async () => {
-        const db = await connect();
         const pipelineDriver = generatePipelineDriver();
         const name = pipelineDriver.name;
         await db.pipelineDrivers.create(pipelineDriver);
@@ -38,7 +40,6 @@ describe('PipelineDrivers', () => {
         expect(response).to.be.null;
     });
     it('should create and fetch version list', async () => {
-        const db = await connect();
         const pipelineDriver1 = generatePipelineDriver();
         const pipelineDriver2 = generatePipelineDriver();
         const pipelineDriver3 = generatePipelineDriver();

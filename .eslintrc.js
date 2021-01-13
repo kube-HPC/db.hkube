@@ -18,7 +18,7 @@ module.exports = {
         'jsdoc/require-param': 1,
         'jsdoc/check-param-names': 1,
         'jsdoc/require-param-name': 1,
-        'jsdoc/check-tag-names': 1,
+        'jsdoc/check-tag-names': 0,
         'jsdoc/check-types': 1,
         'jsdoc/require-param-type': 1,
         'jsdoc/require-returns-type': 1,

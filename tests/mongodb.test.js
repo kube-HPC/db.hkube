@@ -1,22 +1,16 @@
-const uuid = require('uuid');
 const { expect } = require('chai');
+const uuid = require('uuid').v4;
 const DBConnection = require('./../');
 const connect = require('./connect');
 const { ObjectID } = require('mongodb');
-
+const { generateEntries } = require('./utils');
 // a valid mongo ObjectID;
 const nonExistingId = new ObjectID().toHexString();
-const { dummyFile } = require('./mocks');
 
-const generateEntries = amount => {
-    const names = new Array(amount).fill(0).map(() => uuid.v4());
-    return {
-        names,
-        entries: names.map(name => ({ name, files: [dummyFile] })),
-    };
-};
+const generateMockPipelineNames = (amount = 5) =>
+    new Array(amount).fill(0).map((_, idx) => `pipeline-${idx}-${uuid()}`);
 
-describe('MongoDB', () => {
+describe('Collection', () => {
     describe('setup', () => {
         it('should throw invalid provider error', () => {
             // @ts-expect-error
@@ -86,7 +80,7 @@ describe('MongoDB', () => {
                 /you did not provide name | id/i
             );
         });
-        it('should throw an error invalid id provided', async () => {
+        it.skip('should throw an error invalid id provided', async () => {
             const db = await connect();
             await expect(db.dataSources.delete({ id: 'not an id' })).to.be.rejectedWith(
                 /invalid id/i
@@ -109,7 +103,7 @@ describe('MongoDB', () => {
     describe('fetch', () => {
         it('should create object with id', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             const created = await db.pipelines.create({ name }, { applyId: true });
             expect(created.name).to.eql(name);
             expect(created).to.have.property('id');
@@ -117,7 +111,7 @@ describe('MongoDB', () => {
         });
         it('should create object without id', async () => {
             const db = await connect();
-            const name = uuid.v4();
+            const name = uuid();
             const created = await db.pipelines.create({ name }, { applyId: false });
             expect(created.name).to.eql(name);
             expect(created).to.not.not.have.property('id');
@@ -166,6 +160,20 @@ describe('MongoDB', () => {
             );
             expect(promise).to.be.null;
         });
+        it('should throw missing parameters', async () => {
+            const db = await connect();
+            await expect(db.dataSources.fetchMany({})).to.be.rejectedWith(
+                /you did not provide names | ids/i
+            );
+        });
+    });
+
+    describe('fetch many', () => {
+        it('should throw missing ids and names', async () => {
+            const db = await connect();
+            const promise = db.pipelines.fetchMany({});
+            await expect(promise).to.be.rejectedWith('you did not provide names | ids');
+        });
         it('should fetch many by id', async () => {
             const db = await connect();
             const { entries } = generateEntries(5);
@@ -181,11 +189,19 @@ describe('MongoDB', () => {
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
-        it('should throw missing parameters', async () => {
+    });
+    describe('fetchAll', () => {
+        it('should fetch all pipelines', async () => {
             const db = await connect();
-            await expect(db.dataSources.fetchMany({})).to.be.rejectedWith(
-                /you did not provide names | ids/i
-            );
+            const names = generateMockPipelineNames();
+
+            await Promise.all(names.map(name => db.pipelines.create({ name })));
+            const response = await db.pipelines.fetchMany({ names });
+            expect(response.length).to.be.gte(names.length);
+            response.forEach(entry => {
+                expect(entry).to.haveOwnProperty('id');
+                expect(entry).to.haveOwnProperty('name');
+            });
         });
     });
 });

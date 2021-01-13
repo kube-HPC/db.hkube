@@ -2,16 +2,19 @@ const { expect } = require('chai');
 const connect = require('./connect');
 const { generateAlgorithm, generateBuild } = require('./common');
 
+/** @type {import('../lib/Provider').ProviderInterface} */
+let db = null;
 describe('Builds', () => {
+    before(async () => {
+        db = await connect();
+    });
     it('should not throw error itemNotFound', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
         const response = await db.algorithms.builds.fetch({ buildId: build.buildId });
         expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
         await db.algorithms.builds.create(build);
@@ -19,7 +22,6 @@ describe('Builds', () => {
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should create and fetch build', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build1 = generateBuild(algorithm);
         const build2 = generateBuild(algorithm);
@@ -29,7 +31,6 @@ describe('Builds', () => {
         expect(res).to.eql(build1);
     });
     it('should create and update build', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
         const status = 'completed';
@@ -42,7 +43,6 @@ describe('Builds', () => {
         expect(res.status).to.eql(status);
     });
     it('should create and patch build', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
         const status = 'completed';
@@ -55,7 +55,6 @@ describe('Builds', () => {
         expect(res.status).to.eql(status);
     });
     it('should create and delete build', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
         await db.algorithms.builds.create(build);
@@ -67,7 +66,6 @@ describe('Builds', () => {
         expect(response).to.be.null;
     });
     it('should create and fetch build list', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build1 = generateBuild(algorithm);
         const build2 = generateBuild(algorithm);
@@ -81,7 +79,6 @@ describe('Builds', () => {
         expect(list).to.have.lengthOf(3);
     });
     it('should create and fetch versions with sort asc and limit', async () => {
-        const db = await connect();
         const algorithm = generateAlgorithm();
         const build1 = generateBuild(algorithm, 80);
         const build2 = generateBuild(algorithm, 90);

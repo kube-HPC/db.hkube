@@ -2,28 +2,30 @@ const { expect } = require('chai');
 const connect = require('./connect');
 const { generateJob, generateGraph } = require('./common');
 
+/** @type {import('../lib/Provider').ProviderInterface} */
+let db = null;
+
 describe('Jobs', () => {
+    before(async () => {
+        db = await connect();
+    });
     it('should not throw error itemNotFound', async () => {
-        const db = await connect();
         const response = await db.jobs.fetch({ jobId: 'no_such' });
         expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
-        const db = await connect();
         const job = generateJob();
         await db.jobs.create(job);
         const promise = db.jobs.create(job);
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should create and fetch job', async () => {
-        const db = await connect();
         const job = generateJob();
         const res1 = await db.jobs.create(job);
         const res2 = await db.jobs.fetch({ jobId: job.jobId });
         expect(res1).to.eql(res2);
     });
     it('should create and fetch status', async () => {
-        const db = await connect();
         const job = generateJob();
         const { jobId } = job;
         await db.jobs.create(job);
@@ -31,7 +33,6 @@ describe('Jobs', () => {
         expect(res).to.eql({ jobId, ...job.status });
     });
     it('should create and fetch result', async () => {
-        const db = await connect();
         const job = generateJob();
         const { jobId } = job;
         await db.jobs.create(job);
@@ -39,7 +40,6 @@ describe('Jobs', () => {
         expect(res).to.eql({ jobId, ...job.result });
     });
     it('should create and delete job', async () => {
-        const db = await connect();
         const job = generateJob();
         const { jobId } = job;
         await db.jobs.create(job);
@@ -51,7 +51,6 @@ describe('Jobs', () => {
         expect(response).to.be.null;
     });
     it('should search running job by multi params', async () => {
-        const db = await connect();
         const job = generateJob();
         const { result, ...jobData } = job;
         const { experimentName, name: pipelineName } = jobData.pipeline;
@@ -69,7 +68,6 @@ describe('Jobs', () => {
         expect(response[0]).to.eql(jobData);
     });
     it('should search not running job by multi params', async () => {
-        const db = await connect();
         const jobData = generateJob();
         const { experimentName, name: pipelineName } = jobData.pipeline;
         const pipelineType = jobData.pipeline.types[1];
@@ -86,7 +84,6 @@ describe('Jobs', () => {
         expect(response[0]).to.eql(jobData);
     });
     it('should create and update result', async () => {
-        const db = await connect();
         const jobData = generateJob();
         const { result, ...job } = jobData;
         const { jobId } = job;
@@ -97,7 +94,6 @@ describe('Jobs', () => {
         expect(res.result.status).to.eql(status);
     });
     it('should create and update status', async () => {
-        const db = await connect();
         const jobData = generateJob();
         const { status, ...job } = jobData;
         const { jobId } = job;
@@ -107,8 +103,16 @@ describe('Jobs', () => {
         const res = await db.jobs.fetch({ jobId });
         expect(res.status.level).to.eql(level);
     });
+    it('should create and update pipeline', async () => {
+        const job = generateJob();
+        const { jobId } = job;
+        const types = ['foo', 'bar'];
+        await db.jobs.create(job);
+        await db.jobs.updatePipeline({ jobId, types });
+        const res = await db.jobs.fetchPipeline({ jobId });
+        expect(res.types).to.eql(types);
+    });
     it('should create and fetch job list', async () => {
-        const db = await connect();
         const job1 = generateJob();
         const job2 = generateJob();
         const job3 = generateJob();

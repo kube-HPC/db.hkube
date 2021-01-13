@@ -134,4 +134,5 @@ export interface PipelinesInterface {
     delete(props: { name: string }): Promise<string>;
     fetch(params: { name: string }): Promise<Pipeline>;
     fetchAll(): Promise<Pipeline[]>;
+    fetchMany(params: { ids?: Id[]; names?: string[] }): Promise<Pipeline[]>;
 }

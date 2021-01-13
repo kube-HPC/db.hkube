@@ -9,6 +9,7 @@ const openConnections = [];
 
 /** @param {MongoClientOptions} config */
 const connect = async (config = {}, provider = undefined) => {
+    /** @type {ProviderInterface} */
     const db = DBConnection(
         {
             mongo: {

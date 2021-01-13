@@ -2,22 +2,25 @@ const { expect } = require('chai');
 const connect = require('./connect');
 const { generateWebhook } = require('./common');
 
+/** @type {import('../lib/Provider').ProviderInterface} */
+let db = null;
+
 describe('Webhooks-Result', () => {
+    before(async () => {
+        db = await connect();
+    });
     it('should not throw error itemNotFound', async () => {
-        const db = await connect();
         const webhook = generateWebhook();
         const response = await db.webhooks.result.fetch(webhook);
         expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
-        const db = await connect();
         const webhook = generateWebhook();
         await db.webhooks.result.create(webhook);
         const promise = db.webhooks.result.create(webhook);
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should create and fetch webhook', async () => {
-        const db = await connect();
         const webhook = generateWebhook();
         const { jobId } = webhook;
         const res1 = await db.webhooks.result.create(webhook);
@@ -25,7 +28,6 @@ describe('Webhooks-Result', () => {
         expect(res1).to.eql(res2);
     });
     it('should create and update webhook', async () => {
-        const db = await connect();
         const webhook = generateWebhook();
         const { jobId } = webhook;
         const params = { ttl: 60 };
@@ -35,7 +37,6 @@ describe('Webhooks-Result', () => {
         expect(res).to.eql({ ...webhook, ...params });
     });
     it('should create and patch webhook', async () => {
-        const db = await connect();
         const webhook = generateWebhook();
         const { jobId } = webhook;
         const params = { ttl: 60 };
@@ -46,7 +47,6 @@ describe('Webhooks-Result', () => {
         expect(data).to.eql({ ...webhook, ...params });
     });
     it('should create and delete webhook', async () => {
-        const db = await connect();
         const webhook = generateWebhook();
         const { jobId } = webhook;
         await db.webhooks.result.create(webhook);
@@ -55,7 +55,6 @@ describe('Webhooks-Result', () => {
         expect(response).to.be.null;
     });
     it('should create and fetch webhook list', async () => {
-        const db = await connect();
         const webhook1 = generateWebhook();
         const webhook2 = generateWebhook();
         const webhook3 = generateWebhook();
