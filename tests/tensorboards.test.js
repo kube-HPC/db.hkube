@@ -56,6 +56,19 @@ describe('Tensorboards', () => {
         expect(res2).to.eql({ deleted: 1 });
         expect(response).to.be.null;
     });
+    it('should create and search board list', async () => {
+        const db = await connect();
+        const board1 = generateTensorboard();
+        const board2 = generateTensorboard();
+        const board3 = generateTensorboard();
+        const status = 'creating';
+        board1.status = status;
+        await db.tensorboards.create(board1);
+        await db.tensorboards.create(board2);
+        await db.tensorboards.create(board3);
+        const list = await db.tensorboards.search({ status });
+        expect(list.length).to.be.gte(1);
+    });
     it('should create and fetch board list', async () => {
         const board1 = generateTensorboard();
         const board2 = generateTensorboard();
@@ -64,6 +77,6 @@ describe('Tensorboards', () => {
         await db.tensorboards.create(board2);
         await db.tensorboards.create(board3);
         const list = await db.tensorboards.fetchAll();
-        expect(list.length).to.be.greaterThan(3);
+        expect(list.length).to.be.gte(3);
     });
 });
