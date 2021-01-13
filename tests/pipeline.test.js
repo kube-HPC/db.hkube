@@ -75,7 +75,8 @@ describe('Pipelines', () => {
         await db.pipelines.create(pipeline);
         await db.pipelines.patch({ ...params, name });
         const res = await db.pipelines.fetch({ name });
-        expect(res).to.eql({ ...pipeline, ...params });
+        const { key, ...data } = res;
+        expect(data).to.eql({ ...pipeline, ...params });
     });
     it('should create and delete pipeline', async () => {
         const db = await connect();

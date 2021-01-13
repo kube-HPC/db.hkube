@@ -42,7 +42,8 @@ describe('Webhooks-Result', () => {
         await db.webhooks.result.create(webhook);
         await db.webhooks.result.patch({ ...params, jobId });
         const res = await db.webhooks.result.fetch({ jobId });
-        expect(res).to.eql({ ...webhook, ...params });
+        const { key, ...data } = res;
+        expect(data).to.eql({ ...webhook, ...params });
     });
     it('should create and delete webhook', async () => {
         const db = await connect();
