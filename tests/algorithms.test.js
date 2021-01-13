@@ -39,17 +39,32 @@ describe('Algorithms', () => {
         const res2 = await db.algorithms.fetchAll({ query: { cpu } });
         expect(res1.inserted).to.eql(res2.length);
     });
-    it.skip('should update many', async () => {
+    it('should throw on create many', async () => {
         const db = await connect();
-        const cpu = Math.random() * 1000;
-        const algorithm1 = generateAlgorithm({ cpu });
-        const algorithm2 = generateAlgorithm({ cpu });
-        const res1 = await db.algorithms.createMany([algorithm1, algorithm2]);
-        algorithm1.cpu = 5;
-        algorithm2.cpu = 5;
-        const res2 = await db.algorithms.updateMany([algorithm1, algorithm2]);
-        const res3 = await db.algorithms.fetchAll({ query: { cpu } });
-        expect(res1.inserted).to.eql(res2.length);
+        const alg1 = generateAlgorithm();
+        const alg2 = generateAlgorithm();
+        await db.algorithms.createMany([alg1, alg2]);
+        const promise = db.algorithms.createMany([alg1, alg2], { throwOnConflict: true });
+        await expect(promise).to.be.rejectedWith(/could not create/i);
+    });
+    it('should throw on delete many', async () => {
+        const db = await connect();
+        const promise = db.algorithms.deleteMany({ cpu: 99 });
+        await expect(promise).to.be.rejectedWith(/could not find/i);
+    });
+    it('should update many', async () => {
+        const db = await connect();
+        const cpu1 = Math.random() * 1000;
+        const cpu2 = Math.random() * 1000;
+        const algorithm1 = generateAlgorithm({ cpu: cpu1 });
+        const algorithm2 = generateAlgorithm({ cpu: cpu1 });
+        await db.algorithms.createMany([algorithm1, algorithm2]);
+        const res = await db.algorithms.updateMany({
+            filter: { cpu: cpu1 },
+            query: { $set: { cpu: cpu2 } },
+        });
+        const res2 = await db.algorithms.fetchAll({ query: { cpu: cpu2 } });
+        expect(res.modified).to.eql(res2.length);
     });
     it('should create and update algorithm', async () => {
         const db = await connect();
