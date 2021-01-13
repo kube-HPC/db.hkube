@@ -1,25 +1,18 @@
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
 const connect = require('./connect');
-const { generateEntries } = require('./utils');
-
-/** @typedef {import('../lib/DataSource').FileMeta} FileMeta */
-
-/** @type {(amount?: number) => FileMeta[]} */
-const generateMockFiles = (amount = 4) =>
-    new Array(amount).fill(0).map((file, ii) => ({
-        id: `file-${ii}`,
-        name: `file-${ii}-${uuid()}`,
-        path: `path-${ii}`,
-        size: 1,
-        type: Math.random() > 0.5 ? 'csv' : 'md',
-        uploadedAt: new Date().getTime(),
-    }));
+const { generateEntries, generateMockFiles } = require('./utils');
 
 const commitHash = 'my-hash';
+
+/** @type {import('../lib/Provider').ProviderInterface} */
+let db = null;
+
 describe('DataSources', () => {
+    before(async () => {
+        db = await connect();
+    });
     it('should throw conflict error when name already exists', async () => {
-        const db = await connect();
         const name = uuid();
         const firstResponse = await db.dataSources.create({ name });
         expect(firstResponse).to.be.string;
@@ -29,7 +22,6 @@ describe('DataSources', () => {
         );
     });
     it.skip('should create and fetch and delete a datasource by id', async () => {
-        const db = await connect();
         const name = uuid();
         const { id: insertedId } = await db.dataSources.create({ name });
         expect(insertedId).to.be.string;
@@ -45,7 +37,6 @@ describe('DataSources', () => {
         expect(response).to.eql({ deleted: 1 });
     });
     it('should create and fetch and delete a datasource by name', async () => {
-        const db = await connect();
         const name = uuid();
         await db.dataSources.create({ name });
         const dataSource = await db.dataSources.fetch({ name });
@@ -59,7 +50,6 @@ describe('DataSources', () => {
         expect(response).to.eql({ deleted: 1 });
     });
     it('should list all the dataSources without their files list and avoid partial versions', async () => {
-        const db = await connect();
         const name = uuid();
         const created = await db.dataSources.create({ name });
         const firstFetch = await db.dataSources.listDataSources();
@@ -73,7 +63,6 @@ describe('DataSources', () => {
     });
     describe('upload files', () => {
         it('should upload a list of files', async () => {
-            const db = await connect();
             const name = uuid();
             const created = await db.dataSources.create({ name });
             expect(created.isPartial).to.be.true;
@@ -92,7 +81,6 @@ describe('DataSources', () => {
     });
     describe('versioning', () => {
         it('should create a new version', async () => {
-            const db = await connect();
             const name = uuid();
             const createdResponse = await db.dataSources.create({ name });
             const newDescription = 'my new version';
@@ -117,7 +105,6 @@ describe('DataSources', () => {
             expect(updateResponse).not.to.haveOwnProperty('_id');
         });
         it('should fetch the latest version given name only', async () => {
-            const db = await connect();
             const name = uuid();
             await db.dataSources.create({ name });
             const updates = await Promise.all(
@@ -136,7 +123,6 @@ describe('DataSources', () => {
             expect(fetchResponse).to.eql(latest);
         });
         it('should list all the versions of a given dataSource', async () => {
-            const db = await connect();
             const name = uuid();
             await db.dataSources.create({ name });
             const commitHashes = ['a', 'b', 'c', 'd'];
@@ -165,12 +151,10 @@ describe('DataSources', () => {
     });
     describe('fetch many', () => {
         it('should throw missing ids and names', async () => {
-            const db = await connect();
             const promise = db.dataSources.fetchMany({});
             await expect(promise).to.be.rejectedWith('you did not provide names | ids');
         });
         it('should fetch many by id', async () => {
-            const db = await connect();
             const { entries } = generateEntries(5);
             const created = await Promise.all(entries.map(entry => db.dataSources.create(entry)));
             await Promise.all(
@@ -186,7 +170,6 @@ describe('DataSources', () => {
             expect(response).to.have.lengthOf(5);
         });
         it('should fetch many by name', async () => {
-            const db = await connect();
             const { entries, names } = generateEntries(5);
             await Promise.all(entries.map(entry => db.dataSources.create(entry)));
             await Promise.all(
@@ -201,7 +184,6 @@ describe('DataSources', () => {
             expect(response).to.have.lengthOf(5);
         });
         it.skip('should fetch the latest version given name only', async () => {
-            const db = await connect();
             const name = uuid();
             await db.dataSources.create({ name });
             // I think because this is parallel, you got an error sometimes...
@@ -222,8 +204,7 @@ describe('DataSources', () => {
         });
 
         // it.only('should return all the dataSources metadata aggregation', async () => {
-        //     const db = await connect();
-        //     // const name = uuid();
+        //     //     // const name = uuid();
         //     // const filesMeta = generateMockFiles(10);
         //     // await db.dataSources.create({ name });
         //     // await db.dataSources.uploadFiles({ name, filesAdded: filesMeta });
