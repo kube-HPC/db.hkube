@@ -18,7 +18,6 @@ export type FileMeta = {
     uploadedAt: number;
 };
 
-
 export type DataSource = {
     id?: Id;
     name: string;
@@ -60,7 +59,7 @@ export interface DataSourcesCollection extends Collection<DataSource>, DataSourc
         id?: Id;
         commitHash: string;
         files: FileMeta[];
-    }): Promise<DataSource>;
+    }): Promise<DataSourceWithMeta>;
     listDataSources(): Promise<DataSourceMeta[]>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
 }
