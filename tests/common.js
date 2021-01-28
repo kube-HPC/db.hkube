@@ -12,10 +12,10 @@ const generateAlgorithm = options => ({
     },
     minHotWorkers: 0,
     'key.with.dot': {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
     envVars: {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
     type: 'Image',
 });
@@ -49,10 +49,10 @@ const generateBuild = (algorithm, progress) => ({
     data: null,
     timestamp: 1606063281438,
     'key.with.dot': {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
     envVars: {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
 });
 
@@ -94,10 +94,10 @@ const generatePipeline = () => ({
         },
     },
     'key.with.dot': {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
     envVars: {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
     types: ['stored', 'cron', 'stream'],
 });
@@ -244,10 +244,10 @@ const generateTensorboard = () => ({
     taskId: 'A:eval-alg:d5c7ce6c-b8d9-4631-b9cb-95d25b268f06',
     type: 'task',
     'key.with.dot': {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
     envVars: {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
 });
 
@@ -263,10 +263,10 @@ const generateWebhook = () => ({
     },
     status: 'completed',
     'key.with.dot': {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
     envVars: {
-        'and.nested': 'bla'
+        'and.nested': 'bla',
     },
 });
 

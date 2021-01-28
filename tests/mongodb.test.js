@@ -14,11 +14,15 @@ describe('Collection', () => {
     describe('setup', () => {
         it('should throw invalid provider error', () => {
             // @ts-expect-error
-            expect(() => DBConnection({}, 'invalid-provider')).to.throw(/invalid provider/i);
+            expect(() => DBConnection({}, 'invalid-provider')).to.throw(
+                /invalid provider/i
+            );
         });
         it('should throw invalid config error', () => {
             // @ts-expect-error
-            expect(() => DBConnection({ invalid: '' })).to.throw(/invalid config/i);
+            expect(() => DBConnection({ invalid: '' })).to.throw(
+                /invalid config/i
+            );
         });
         it('should throw missing user name', async () => {
             await expect(
@@ -58,7 +62,9 @@ describe('Collection', () => {
                 reconnect: true,
                 // heartbeatFrequencyMS: 1000
             });
-            await expect(promise).to.be.rejectedWith(/Server selection timed out/i);
+            await expect(promise).to.be.rejectedWith(
+                /Server selection timed out/i
+            );
         });
         it('should bootstrap MongoDB connection amd disconnect', async () => {
             const db = await connect();
@@ -70,25 +76,28 @@ describe('Collection', () => {
     describe('delete', () => {
         it.skip('should throw an error if both id and name are provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.delete({ name: 'joe', id: 'some id' })).to.be.rejectedWith(
-                /only one of | id/i
-            );
+            await expect(
+                db.dataSources.delete({ name: 'joe', id: 'some id' })
+            ).to.be.rejectedWith(/only one of | id/i);
         });
         it.skip('should throw an error if no id provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.delete({ id: undefined })).to.be.rejectedWith(
-                /you did not provide name | id/i
-            );
+            await expect(
+                db.dataSources.delete({ id: undefined })
+            ).to.be.rejectedWith(/you did not provide name | id/i);
         });
         it.skip('should throw an error invalid id provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.delete({ id: 'not an id' })).to.be.rejectedWith(
-                /invalid id/i
-            );
+            await expect(
+                db.dataSources.delete({ id: 'not an id' })
+            ).to.be.rejectedWith(/invalid id/i);
         });
         it('should throw not found error if on non existing id', async () => {
             const db = await connect();
-            const response = db.dataSources.delete({ id: nonExistingId }, { allowNotFound: false });
+            const response = db.dataSources.delete(
+                { id: nonExistingId },
+                { allowNotFound: false }
+            );
             await expect(response).to.be.rejectedWith(/could not find/i);
         });
         it('should return null for non existing id if allowNotFound', async () => {
@@ -104,7 +113,10 @@ describe('Collection', () => {
         it('should create object with id', async () => {
             const db = await connect();
             const name = uuid();
-            const created = await db.pipelines.create({ name }, { applyId: true });
+            const created = await db.pipelines.create(
+                { name },
+                { applyId: true }
+            );
             expect(created.name).to.eql(name);
             expect(created).to.have.property('id');
             expect(created).not.to.have.property('_id');
@@ -112,7 +124,10 @@ describe('Collection', () => {
         it('should create object without id', async () => {
             const db = await connect();
             const name = uuid();
-            const created = await db.pipelines.create({ name }, { applyId: false });
+            const created = await db.pipelines.create(
+                { name },
+                { applyId: false }
+            );
             expect(created.name).to.eql(name);
             expect(created).to.not.not.have.property('id');
             expect(created).not.to.have.property('_id');
@@ -137,19 +152,22 @@ describe('Collection', () => {
         });
         it.skip('should throw an error if both id and name are provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.fetch({ name: 'name', id: '123' })).to.be.rejectedWith(
-                /only one of/i
-            );
+            await expect(
+                db.dataSources.fetch({ name: 'name', id: '123' })
+            ).to.be.rejectedWith(/only one of/i);
         });
         it('should throw an error if invalid id provided', async () => {
             const db = await connect();
-            await expect(db.dataSources.fetch({ id: 'not an id' })).to.be.rejectedWith(
-                /invalid id/i
-            );
+            await expect(
+                db.dataSources.fetch({ id: 'not an id' })
+            ).to.be.rejectedWith(/invalid id/i);
         });
         it('should throw not found error for non existing id', async () => {
             const db = await connect();
-            const promise = db.dataSources.fetch({ id: nonExistingId }, { allowNotFound: false });
+            const promise = db.dataSources.fetch(
+                { id: nonExistingId },
+                { allowNotFound: false }
+            );
             await expect(promise).to.be.rejectedWith(/could not find/i);
         });
         it('should not throw not found error for non existing id', async () => {
@@ -172,12 +190,16 @@ describe('Collection', () => {
         it('should throw missing ids and names', async () => {
             const db = await connect();
             const promise = db.pipelines.fetchMany({});
-            await expect(promise).to.be.rejectedWith('you did not provide names | ids');
+            await expect(promise).to.be.rejectedWith(
+                'you did not provide names | ids'
+            );
         });
         it('should fetch many by id', async () => {
             const db = await connect();
             const { entries } = generateEntries(5);
-            const created = await Promise.all(entries.map(d => db.dataSources.create(d)));
+            const created = await Promise.all(
+                entries.map(d => db.dataSources.create(d))
+            );
             const ids = created.map(entry => entry.id);
             const response = await db.dataSources.fetchMany({ ids });
             expect(response).to.have.lengthOf(5);

@@ -11,7 +11,13 @@ describe('TriggersTree', () => {
         const rootJobName = name;
         const jobId = uuid();
         const parentJobId = rootJobId;
-        await db.triggersTree.update({ name, rootJobName, jobId, rootJobId, parentJobId });
+        await db.triggersTree.update({
+            name,
+            rootJobName,
+            jobId,
+            rootJobId,
+            parentJobId,
+        });
         await db.triggersTree.update({
             name,
             rootJobName,

@@ -30,7 +30,12 @@ describe('DataSources', () => {
                 snapshotName: snapshot.name,
                 dataSourceName: snapshot.dataSource.name,
             });
-            expect(resolvedDataSource).to.have.all.keys('name', 'query', 'id', 'dataSource');
+            expect(resolvedDataSource).to.have.all.keys(
+                'name',
+                'query',
+                'id',
+                'dataSource'
+            );
             expect(resolvedDataSource.dataSource).to.eql(dataSource);
         });
         it('should return null for non matching datasource', async () => {

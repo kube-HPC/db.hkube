@@ -36,7 +36,11 @@ describe('Algorithms', () => {
         const algorithm1 = generateAlgorithm({ cpu });
         const algorithm2 = generateAlgorithm({ cpu });
         const algorithm3 = generateAlgorithm({ cpu });
-        const res1 = await db.algorithms.createMany([algorithm1, algorithm2, algorithm3]);
+        const res1 = await db.algorithms.createMany([
+            algorithm1,
+            algorithm2,
+            algorithm3,
+        ]);
         const res2 = await db.algorithms.fetchAll({ query: { cpu } });
         expect(res1.inserted).to.eql(res2.length);
     });
@@ -56,7 +60,9 @@ describe('Algorithms', () => {
         const alg1 = generateAlgorithm();
         const alg2 = generateAlgorithm();
         await db.algorithms.createMany([alg1, alg2]);
-        const promise = db.algorithms.createMany([alg1, alg2], { throwOnConflict: true });
+        const promise = db.algorithms.createMany([alg1, alg2], {
+            throwOnConflict: true,
+        });
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should throw on delete many', async () => {
@@ -123,7 +129,12 @@ describe('Algorithms', () => {
         await db.algorithms.readme.create(readme);
 
         const res = await db.algorithms.delete({ name: algorithm.name });
-        expect(res).to.eql({ algorithms: 1, versions: 2, builds: 2, readme: 1 });
+        expect(res).to.eql({
+            algorithms: 1,
+            versions: 2,
+            builds: 2,
+            readme: 1,
+        });
     });
     it('should create and search algorithms', async () => {
         const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid()}` });

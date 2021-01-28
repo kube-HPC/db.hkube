@@ -12,7 +12,10 @@ export interface Algorithm {
     baseImage?: string;
     /** Algorithm cpu */
     cpu?: number;
-    /** The extension name that will be attached to a file when downloading algorithm result */
+    /**
+     * The extension name that will be attached to a file when downloading
+     * algorithm result
+     */
     downloadFileExt?: string;
     entryPoint?: string;
     env?: Env;
@@ -30,12 +33,15 @@ export interface Algorithm {
     /** Key value labels for nodes constraint */
     nodeSelector?: { [key: string]: string };
     options?: Options;
-    /** The amount of algorithms required to be scheduled first in a case of cluster pressure */
+    /**
+     * The amount of algorithms required to be scheduled first in a case of
+     * cluster pressure
+     */
     quotaGuarantee?: number;
     /**
-     * Reserved memory for HKube's operations such as in-memory cache, higher value means faster
-     * data retrieval and less algorithm memory, lower value means slower data retrieval and more
-     * algorithm memory
+     * Reserved memory for HKube's operations such as in-memory cache, higher
+     * value means faster data retrieval and less algorithm memory, lower value
+     * means slower data retrieval and more algorithm memory
      */
     reservedMemory?: string;
     /** Type of algorithm code resource */
@@ -61,7 +67,8 @@ export interface GitRepository {
     /** A specific tag which will trigger the build */
     tag?: string;
     /**
-     * A token which allows hkube's build system to access private repositories more information
+     * A token which allows hkube's build system to access private repositories
+     * more information
      * https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
      */
     token?: string;

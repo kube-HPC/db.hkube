@@ -24,7 +24,11 @@ describe('Experiments', () => {
         const name = experiment.name;
         const description = 'just it';
         await db.experiments.create(experiment);
-        await db.experiments.update({ name, description, newField: [1, false, 4, 'fff'] });
+        await db.experiments.update({
+            name,
+            description,
+            newField: [1, false, 4, 'fff'],
+        });
         const res = await db.experiments.fetch({ name });
         expect(res.description).to.eql(description);
     });

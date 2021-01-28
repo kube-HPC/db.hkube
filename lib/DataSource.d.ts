@@ -47,7 +47,9 @@ export type DataSourceVersion = {
     commitHash: string;
 };
 
-export interface DataSourcesCollection extends Collection<DataSource>, DataSourceOverrides {
+export interface DataSourcesCollection
+    extends Collection<DataSource>,
+        DataSourceOverrides {
     create(props: { name: string }): Promise<DataSource>;
     createVersion(params: {
         name?: string;

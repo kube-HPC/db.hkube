@@ -56,7 +56,11 @@ describe('DataSources', () => {
         // at first it is marked as partial and should not be fetched
         expect(firstFetch.find(item => item.id === created.id)).to.be.undefined;
         // tags the dataSource as non partial and now should be listed
-        await db.dataSources.updateFiles({ id: created.id, files: [], commitHash: 'no-version' });
+        await db.dataSources.updateFiles({
+            id: created.id,
+            files: [],
+            commitHash: 'no-version',
+        });
         const entries = await db.dataSources.listDataSources();
         expect(entries.length).to.be.gte(1);
         expect(entries).not.to.all.keys('files');
@@ -152,11 +156,15 @@ describe('DataSources', () => {
     describe('fetch many', () => {
         it('should throw missing ids and names', async () => {
             const promise = db.dataSources.fetchMany({});
-            await expect(promise).to.be.rejectedWith('you did not provide names | ids');
+            await expect(promise).to.be.rejectedWith(
+                'you did not provide names | ids'
+            );
         });
         it('should fetch many by id', async () => {
             const { entries } = generateEntries(5);
-            const created = await Promise.all(entries.map(entry => db.dataSources.create(entry)));
+            const created = await Promise.all(
+                entries.map(entry => db.dataSources.create(entry))
+            );
             await Promise.all(
                 entries.map(entry =>
                     db.dataSources.updateFiles({
@@ -171,7 +179,9 @@ describe('DataSources', () => {
         });
         it('should fetch many by name', async () => {
             const { entries, names } = generateEntries(5);
-            await Promise.all(entries.map(entry => db.dataSources.create(entry)));
+            await Promise.all(
+                entries.map(entry => db.dataSources.create(entry))
+            );
             await Promise.all(
                 entries.map(entry =>
                     db.dataSources.updateFiles({

@@ -11,7 +11,9 @@ describe('Builds', () => {
     it('should not throw error itemNotFound', async () => {
         const algorithm = generateAlgorithm();
         const build = generateBuild(algorithm);
-        const response = await db.algorithms.builds.fetch({ buildId: build.buildId });
+        const response = await db.algorithms.builds.fetch({
+            buildId: build.buildId,
+        });
         expect(response).to.be.null;
     });
     it('should throw conflict error', async () => {
