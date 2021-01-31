@@ -139,8 +139,8 @@ const generateGraph = () => ({
     ],
 });
 
-const generateStatus = () => ({
-    timestamp: new Date().toUTCString(),
+const generateStatus = (useUnixTime = false) => ({
+    timestamp: useUnixTime ? Date.now() : new Date().toUTCString(),
     status: 'active',
     level: 'debug',
     pipeline: `DAG-${uuid()}`,
@@ -154,8 +154,8 @@ const generateStatus = () => ({
     },
 });
 
-const generateResult = () => ({
-    timestamp: new Date().toUTCString(),
+const generateResult = (useUnixTime = false) => ({
+    timestamp: useUnixTime ? Date.now() : new Date().toUTCString(),
     pipeline: `DAG-${uuid()}`,
     data: {
         storageInfo: {
@@ -166,12 +166,12 @@ const generateResult = () => ({
     timeTook: 2163.044,
 });
 
-const generateJob = () => ({
+const generateJob = (useUnixTime = false) => ({
     jobId: `jobId-${uuid()}`,
     pipeline: generatePipeline(),
     graph: generateGraph(),
-    status: generateStatus(),
-    result: generateResult(),
+    status: generateStatus(useUnixTime),
+    result: generateResult(useUnixTime),
 });
 
 const generateExperiment = () => ({
@@ -270,6 +270,33 @@ const generateWebhook = () => ({
     },
 });
 
+const generateDataSourceNode = ({ id = uuid(), asSnapshot = false } = {}) => ({
+    nodeName: uuid(),
+    kind: 'dataSource',
+    dataSource: asSnapshot
+        ? {
+              snapshot: {
+                  name: uuid(),
+              },
+              name: uuid(),
+          }
+        : { id },
+});
+
+const generateDataSourceJob = () => {
+    let job = generateJob(true);
+    return {
+        ...job,
+        pipeline: {
+            ...job.pipeline,
+            nodes: [
+                generateDataSourceNode({ asSnapshot: Math.random() > 0.5 }),
+                ...job.pipeline.nodes,
+            ],
+        },
+    };
+};
+
 module.exports = {
     generateAlgorithm,
     generateVersion,
@@ -285,4 +312,6 @@ module.exports = {
     generatePipelineReadme,
     generateTensorboard,
     generateWebhook,
+    generateDataSourceNode,
+    generateDataSourceJob,
 };

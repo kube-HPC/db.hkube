@@ -1,9 +1,12 @@
+const { pipelineStatuses } = require('@hkube/consts');
 const { expect } = require('chai');
+const { promisify } = require('util');
 const connect = require('./connect');
-const { generateJob, generateGraph } = require('./common');
-
+const { doneStatus } = require('./../lib/MongoDB/Jobs');
+const { generateJob, generateDataSourceJob } = require('./common');
 /** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
+const sleep = promisify(setTimeout);
 
 describe('Jobs', () => {
     before(async () => {
@@ -121,5 +124,67 @@ describe('Jobs', () => {
         await db.jobs.create(job3);
         const list = await db.jobs.fetchAll();
         expect(list.length).to.be.greaterThan(3);
+    });
+    it('should fetch active and inactive datasources', async () => {
+        // this test scans through the whole collection and requires an empty collection
+        await db.jobs.collection.deleteMany({});
+        const statuses = Object.values(pipelineStatuses);
+        const jobs = new Array(statuses.length)
+            .fill(0)
+            .map(generateDataSourceJob);
+        await Promise.all(jobs.map(job => db.jobs.create(job)));
+        await Promise.all(
+            jobs.map((job, ii) =>
+                db.jobs.updateStatus({
+                    jobId: job.jobId,
+                    status: statuses[ii],
+                })
+            )
+        );
+
+        const activeJobs = await db.jobs.scanMountedDataSources({
+            returnActiveJobs: true,
+        });
+        const inactiveJobs = await db.jobs.scanMountedDataSources({
+            returnActiveJobs: false,
+        });
+        expect(inactiveJobs.length).to.eq(doneStatus.length);
+        expect(activeJobs.length).to.eq(statuses.length - doneStatus.length);
+    });
+    it('should avoid fetching dataSources for jobs not old enough', async () => {
+        const sleepDuration = 100;
+        await db.jobs.collection.deleteMany({});
+        // an extra active job
+        await db.jobs.create(generateDataSourceJob());
+
+        const firstJob = generateDataSourceJob();
+        await db.jobs.create(firstJob);
+        await db.jobs.updateStatus({
+            jobId: firstJob.jobId,
+            status: pipelineStatuses.COMPLETED,
+        });
+        await sleep(sleepDuration);
+
+        const secondJob = generateDataSourceJob();
+        await db.jobs.create(secondJob);
+        await db.jobs.updateStatus({
+            jobId: secondJob.jobId,
+            status: pipelineStatuses.COMPLETED,
+        });
+
+        const activeJobs = await db.jobs.scanMountedDataSources({
+            returnActiveJobs: true,
+        });
+        expect(activeJobs).to.have.lengthOf(1);
+        const recentInactiveJobs = await db.jobs.scanMountedDataSources({
+            returnActiveJobs: false,
+            inactiveTime: sleepDuration / 2,
+        });
+        expect(recentInactiveJobs).to.have.lengthOf(1);
+        const oldInactiveJobs = await db.jobs.scanMountedDataSources({
+            returnActiveJobs: false,
+            inactiveTime: sleepDuration * 2,
+        });
+        expect(oldInactiveJobs).to.have.lengthOf(2);
     });
 });
