@@ -28,6 +28,7 @@ type DataSourceWithCredentials = {
     commitHash: string;
     files: FileMeta[];
     isPartial: boolean;
+    repositoryUrl: string;
     _credentials: {
         storage: ExternalStorage;
         git: ExternalGit;
@@ -90,7 +91,8 @@ export interface DataSourcesCollection
     }): Promise<DataSourceWithMeta>;
     fetchWithCredentials: (
         ...params: Parameters<typeof Collection.prototype.fetch>
-    ) => DataSourceWithCredentials;
+    ) => Promise<DataSourceWithCredentials>;
     listDataSources(): Promise<DataSourceMeta[]>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
+    setRepositoryUrl({ name: string }, { url: string }): Promise<void>;
 }
