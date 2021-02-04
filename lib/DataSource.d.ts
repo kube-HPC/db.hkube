@@ -94,5 +94,5 @@ export interface DataSourcesCollection
     ) => Promise<DataSourceWithCredentials>;
     listDataSources(): Promise<DataSourceMeta[]>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
-    setRepositoryUrl({ name: string }, { url: string }): Promise<void>;
+    setRepositoryUrl({ name: string }, { url: string }): Promise<null>;
 }
