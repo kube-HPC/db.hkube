@@ -98,4 +98,3 @@ export interface DataSourcesCollection
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
     setRepositoryUrl({ name: string }, { url: string }): Promise<null>;
 }
-u
