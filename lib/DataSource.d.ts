@@ -54,6 +54,7 @@ export type ExternalGit = {
     organization: string;
     endpoint: string;
     token: string;
+    kind: 'github' | 'gitlab';
 };
 
 export type ExternalStorage = {
@@ -61,6 +62,7 @@ export type ExternalStorage = {
     secretAccessKey: string;
     endpoint: string;
     useSSL: boolean;
+    bucketName: string;
 };
 
 export type DataSourceWithMeta = DataSource & DataSourceMeta;
@@ -96,3 +98,4 @@ export interface DataSourcesCollection
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
     setRepositoryUrl({ name: string }, { url: string }): Promise<null>;
 }
+u
