@@ -1,5 +1,5 @@
 import { FileMeta } from './DataSource';
-import { DataSource } from './DataSource.d';
+import { DataSource, DataSourceWithCredentials } from './DataSource.d';
 import { Id } from './MongoDB/types';
 import Collection from './MongoDB/Collection';
 
@@ -16,12 +16,20 @@ export type ResolvedSnapshot = Snapshot & {
     dataSource: DataSource;
 };
 
+export type ResolvedSnapshotWithCredentials = Snapshot & {
+    dataSource: DataSourceWithCredentials;
+};
+
 export interface SnapshotsCollection extends Collection<Snapshot> {
     create(params: Snapshot, setting: { applyId?: boolean }): Promise<Snapshot>;
     fetchDataSource(params: {
         snapshotName: string;
         dataSourceName: string;
     }): Promise<ResolvedSnapshot>;
+    fetchDataSourceWithCredentials(params: {
+        snapshotName: string;
+        dataSourceName: string;
+    }): Promise<ResolvedSnapshotWithCredentials>;
     updateFilesList(props: {
         id: string;
         filesList: FileMeta[];
