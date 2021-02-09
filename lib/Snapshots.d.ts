@@ -13,6 +13,7 @@ type Snapshot = {
 };
 
 export type ResolvedSnapshot = Snapshot & {
+    id: Id;
     dataSource: DataSource;
 };
 
