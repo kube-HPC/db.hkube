@@ -14,7 +14,13 @@ describe('DataSources', () => {
     describe('fetch dataSource', () => {
         it('should fetch dataSource by snapshot', async () => {
             const name = uuid();
-            const dataSource = await db.dataSources.create({ name });
+            const { _credentials, ...dataSource } = await db.dataSources.create(
+                {
+                    name,
+                    git: null,
+                    storage: null,
+                }
+            );
             const snapshot = await db.snapshots.create(
                 {
                     name,

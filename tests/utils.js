@@ -6,7 +6,12 @@ const generateEntries = amount => {
     const names = new Array(amount).fill(0).map(() => uuid());
     return {
         names,
-        entries: names.map(name => ({ name, files: [dummyFile] })),
+        entries: names.map(name => ({
+            name,
+            files: [dummyFile],
+            git: null,
+            storage: null,
+        })),
     };
 };
 

@@ -1,3 +1,4 @@
+import { DataSourcesCollection } from './DataSource.d';
 /*---------------------------------------------------------
  * Copyright (C) Hkube. All rights reserved.
  *--------------------------------------------------------*/
@@ -18,7 +19,7 @@ export type FileMeta = {
     uploadedAt: number;
 };
 
-export type DataSource = {
+type DataSourceWithCredentials = {
     id?: Id;
     name: string;
     /** A commit message for the description */
@@ -27,6 +28,17 @@ export type DataSource = {
     commitHash: string;
     files: FileMeta[];
     isPartial: boolean;
+    repositoryUrl: string;
+    _credentials: {
+        storage: ExternalStorage;
+        git: ExternalGit;
+    };
+};
+export type DataSource = Omit<DataSourceWithCredentials, '_credentials'>;
+
+export type DataSourceStorage = {
+    storage: ExternalStorage;
+    git: ExternalGit;
 };
 
 export type DataSourceMeta = {
@@ -38,6 +50,20 @@ export type DataSourceMeta = {
     totalSize: number;
     fileTypes: string[];
 };
+export type ExternalGit = {
+    organization: string;
+    endpoint: string;
+    token: string;
+    kind: 'github' | 'gitlab';
+};
+
+export type ExternalStorage = {
+    accessKeyId: string;
+    secretAccessKey: string;
+    endpoint: string;
+    useSSL: boolean;
+    bucketName: string;
+};
 
 export type DataSourceWithMeta = DataSource & DataSourceMeta;
 
@@ -46,22 +72,29 @@ export type DataSourceVersion = {
     versionDescription: string;
     commitHash: string;
 };
-
 export interface DataSourcesCollection
     extends Collection<DataSource>,
         DataSourceOverrides {
-    create(props: { name: string }): Promise<DataSource>;
+    create(props: {
+        name: string;
+        git: ExternalGit;
+        storage: ExternalStorage;
+    }): Promise<DataSource>;
     createVersion(params: {
         name?: string;
         id?: Id;
         versionDescription: string;
-    }): Promise<DataSource>;
+    }): Promise<DataSourceWithCredentials>;
     updateFiles(params: {
         name?: string;
         id?: Id;
         commitHash: string;
         files: FileMeta[];
     }): Promise<DataSourceWithMeta>;
+    fetchWithCredentials: (
+        ...params: Parameters<typeof Collection.prototype.fetch>
+    ) => Promise<DataSourceWithCredentials>;
     listDataSources(): Promise<DataSourceMeta[]>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
+    setRepositoryUrl({ name: string }, { url: string }): Promise<null>;
 }
