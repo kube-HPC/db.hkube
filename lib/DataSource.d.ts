@@ -30,16 +30,11 @@ type DataSourceWithCredentials = {
     isPartial: boolean;
     repositoryUrl: string;
     _credentials: {
-        storage: ExternalStorage;
-        git: ExternalGit;
+        storage: StorageConfig;
+        git: GitConfig;
     };
 };
 export type DataSource = Omit<DataSourceWithCredentials, '_credentials'>;
-
-export type DataSourceStorage = {
-    storage: ExternalStorage;
-    git: ExternalGit;
-};
 
 export type DataSourceMeta = {
     id: Id;
@@ -50,14 +45,24 @@ export type DataSourceMeta = {
     totalSize: number;
     fileTypes: string[];
 };
+
+export type GitConfig = ExternalGit | InternalGit;
+
 export type ExternalGit = {
-    organization: string;
+    organization?: string;
     endpoint: string;
     token: string;
     kind: 'github' | 'gitlab';
 };
 
-export type ExternalStorage = {
+export type InternalGit = {
+    endpoint: string;
+    token: string;
+    kind: 'internal';
+};
+
+export type StorageConfig = {
+    kind: 'S3' | 'internal';
     accessKeyId: string;
     secretAccessKey: string;
     endpoint: string;
@@ -77,8 +82,8 @@ export interface DataSourcesCollection
         DataSourceOverrides {
     create(props: {
         name: string;
-        git: ExternalGit;
-        storage: ExternalStorage;
+        git: GitConfig;
+        storage: StorageConfig;
     }): Promise<DataSource>;
     createVersion(params: {
         name?: string;
