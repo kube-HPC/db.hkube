@@ -66,7 +66,6 @@ export type StorageConfig = {
     accessKeyId: string;
     secretAccessKey: string;
     endpoint: string;
-    useSSL: boolean;
     bucketName: string;
 };
 
