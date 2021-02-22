@@ -53,6 +53,37 @@ describe('Jobs', () => {
         expect(res2).to.eql({ deleted: 1 });
         expect(response).to.be.null;
     });
+    it('should getPipelinesStats', async () => {
+        const experimentName = 'aggregate';
+        const job1 = generateJob(null, 'simple1', 'failed', experimentName);
+        const job2 = generateJob(null, 'simple1', 'stopped', experimentName);
+        const job3 = generateJob(null, 'simple1', 'completed', experimentName);
+        const job4 = generateJob(null, 'simple1', 'active', experimentName);
+        const job5 = generateJob(null, 'simple2', 'failed', experimentName);
+        const job6 = generateJob(null, 'simple2', 'failed', experimentName);
+        const job7 = generateJob(null, 'simple3', 'active', experimentName);
+        const job8 = generateJob(null, 'simple3', 'active', experimentName);
+        const job9 = generateJob(null, 'simple4', 'active', experimentName);
+        await db.jobs.create(job1);
+        await db.jobs.create(job2);
+        await db.jobs.create(job3);
+        await db.jobs.create(job4);
+        await db.jobs.create(job5);
+        await db.jobs.create(job6);
+        await db.jobs.create(job7);
+        await db.jobs.create(job8);
+        await db.jobs.create(job9);
+        const limit = 3;
+        const response = await db.jobs.getPipelinesStats({
+            pipelineType: 'stored',
+            experimentName,
+            limit,
+        });
+        expect(response).to.have.lengthOf(limit);
+        const pipeline = response.find(r => r.name === 'simple1');
+        const stats = pipeline.stats.map(s => s.status).sort();
+        expect(stats).to.eql(['active', 'completed', 'failed', 'stopped']);
+    });
     it('should search running job by multi params', async () => {
         const job = generateJob();
         const { result, ...jobData } = job;
