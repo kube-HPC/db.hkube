@@ -99,7 +99,9 @@ describe('DataSources', () => {
                 'fileTypes',
                 'totalSize',
                 'avgFileSize',
-                'filesCount'
+                'filesCount',
+                'git',
+                'storage'
             );
             expect(uploadResponse.files).to.have.lengthOf(4);
             expect(uploadResponse.files).to.eql(filesAdded);

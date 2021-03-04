@@ -1,4 +1,4 @@
-import { DataSourcesCollection } from './DataSource.d';
+import { DataSourcesCollection, StorageConfig } from './DataSource.d';
 /*---------------------------------------------------------
  * Copyright (C) Hkube. All rights reserved.
  *--------------------------------------------------------*/
@@ -28,12 +28,33 @@ type DataSourceWithCredentials = {
     commitHash: string;
     files: FileMeta[];
     isPartial: boolean;
-    repositoryUrl: string;
-    _credentials: {
-        storage: StorageConfig;
-        git: GitConfig;
+    storage: StorageConfig;
+    git: GitConfig;
+    _credentials: Credentials;
+};
+
+export type Credentials = {
+    storage?: {
+        accessKeyId: string;
+        secretAccessKey: string;
+    };
+    git?: {
+        token: string;
+        tokenName?: string;
     };
 };
+
+export type GitConfig = {
+    kind: 'github' | 'gitlab' | 'internal';
+    repositoryUrl: string;
+};
+
+export type StorageConfig = {
+    kind: 'S3' | 'internal';
+    endpoint: string;
+    bucketName: string;
+};
+
 export type DataSource = Omit<DataSourceWithCredentials, '_credentials'>;
 
 export type DataSourceMeta = {
@@ -44,29 +65,6 @@ export type DataSourceMeta = {
     avgFileSize: string;
     totalSize: number;
     fileTypes: string[];
-};
-
-export type GitConfig = ExternalGit | InternalGit;
-
-export type ExternalGit = {
-    organization?: string;
-    endpoint: string;
-    token: string;
-    kind: 'github' | 'gitlab';
-};
-
-export type InternalGit = {
-    endpoint: string;
-    token: string;
-    kind: 'internal';
-};
-
-export type StorageConfig = {
-    kind: 'S3' | 'internal';
-    accessKeyId: string;
-    secretAccessKey: string;
-    endpoint: string;
-    bucketName: string;
 };
 
 export type DataSourceWithMeta = DataSource & DataSourceMeta;
@@ -83,6 +81,7 @@ export interface DataSourcesCollection
         name: string;
         git: GitConfig;
         storage: StorageConfig;
+        credentials: Credentials;
     }): Promise<DataSource>;
     createVersion(params: {
         name?: string;
