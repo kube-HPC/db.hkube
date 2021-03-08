@@ -99,7 +99,9 @@ describe('DataSources', () => {
                 'fileTypes',
                 'totalSize',
                 'avgFileSize',
-                'filesCount'
+                'filesCount',
+                'git',
+                'storage'
             );
             expect(uploadResponse.files).to.have.lengthOf(4);
             expect(uploadResponse.files).to.eql(filesAdded);
@@ -230,25 +232,28 @@ describe('DataSources', () => {
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
-        it.skip('should fetch the latest version given name only', async () => {
+        it('should fetch the latest version given name only', async () => {
             const name = uuid();
             await createDataSource(name);
-            // I think because this is parallel, you got an error sometimes...
-            const updates = await Promise.all(
-                new Array(4)
-                    .fill(0)
-                    .map((_, ii) => `update-${ii}`)
-                    .map(newDescription =>
-                        db.dataSources.updateFiles({
-                            name,
-                            // @ts-ignore
-                            versionDescription: newDescription,
-                        })
-                    )
-            );
+            const descriptions = new Array(4)
+                .fill(0)
+                .map((_, ii) => `update-${ii}`);
+
+            for await (const versionDescription of descriptions) {
+                const createdVersion = await db.dataSources.createVersion({
+                    name,
+                    versionDescription,
+                });
+                await db.dataSources.updateFiles({
+                    id: createdVersion.id,
+                    files: [],
+                    commitHash: '',
+                });
+            }
+
             const fetchResponse = await db.dataSources.fetch({ name });
-            const latest = updates[updates.length - 1];
-            expect(fetchResponse).to.eql(latest);
+            const latest = descriptions[descriptions.length - 1];
+            expect(fetchResponse.versionDescription).to.eql(latest);
         });
     });
 });
