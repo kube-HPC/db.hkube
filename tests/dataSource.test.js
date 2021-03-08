@@ -239,7 +239,7 @@ describe('DataSources', () => {
                 .fill(0)
                 .map((_, ii) => `update-${ii}`);
 
-            for await (versionDescription of descriptions) {
+            for await (const versionDescription of descriptions) {
                 const createdVersion = await db.dataSources.createVersion({
                     name,
                     versionDescription,
