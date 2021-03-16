@@ -100,4 +100,9 @@ export interface DataSourcesCollection
     listDataSources(): Promise<DataSourceMeta[]>;
     listVersions(params: { name: string }): Promise<DataSourceVersion[]>;
     setRepositoryUrl({ name: string }, { url: string }): Promise<null>;
+    updateCredentials(props: {
+        name: string;
+        credentials: Credentials;
+        allowNotFound?: boolean;
+    }): Promise<number>;
 }
