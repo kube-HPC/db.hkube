@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const { promisify } = require('util');
 const connect = require('./connect');
 const { doneStatus } = require('./../lib/MongoDB/Jobs');
-const { generateJob, generateDataSourceJob } = require('./common');
+const { generateJob, generateDataSourceJob, generateGraph } = require('./common');
 /** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 const sleep = promisify(setTimeout);
@@ -41,6 +41,13 @@ describe('Jobs', () => {
         await db.jobs.create(job);
         const res = await db.jobs.fetchResult({ jobId });
         expect(res).to.eql({ jobId, ...job.result });
+    });
+    it('should create and fetch graph', async () => {
+        const job = generateJob();
+        const { jobId } = job;
+        await db.jobs.create(job);
+        const res = await db.jobs.fetchGraph({ jobId });
+        expect(res).to.eql({ jobId, ...job.graph });
     });
     it('should create and delete job', async () => {
         const job = generateJob();
@@ -105,6 +112,16 @@ describe('Jobs', () => {
         await db.jobs.updateStatus({ jobId, level });
         const res = await db.jobs.fetch({ jobId });
         expect(res.status.level).to.eql(level);
+    });
+    it('should create and update graph', async () => {
+        const jobData = generateJob();
+        const { graph, ...job } = jobData;
+        const { jobId } = job;
+        const graph2 = generateGraph();
+        await db.jobs.create(job);
+        await db.jobs.updateGraph({ jobId, graph: graph2 });
+        const res = await db.jobs.fetch({ jobId });
+        expect(res.graph).to.eql(graph2);
     });
     it('should create and update pipeline', async () => {
         const job = generateJob();
