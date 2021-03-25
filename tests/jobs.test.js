@@ -49,6 +49,14 @@ describe('Jobs', () => {
         const res = await db.jobs.fetchGraph({ jobId });
         expect(res).to.eql({ jobId, ...job.graph });
     });
+    it('should ignore undefined graph', async () => {
+        const job = generateJob();
+        job.graph.nodes[0].output=undefined;
+        const { jobId } = job;
+        await db.jobs.create(job);
+        const res = await db.jobs.fetchGraph({ jobId });
+        expect(res.nodes[0]).to.not.have.property('output');
+    });
     it('should create and delete job', async () => {
         const job = generateJob();
         const { jobId } = job;
