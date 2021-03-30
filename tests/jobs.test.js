@@ -130,6 +130,7 @@ describe('Jobs', () => {
         await db.jobs.updateGraph({ jobId, graph: graph2 });
         const res = await db.jobs.fetch({ jobId });
         expect(res.graph).to.eql(graph2);
+        expect(res.timestamp).to.not.exist
     });
     it('should create and update pipeline', async () => {
         const job = generateJob();

@@ -160,17 +160,14 @@ describe('DataSources', () => {
         it('should fetch the latest version given name only', async () => {
             const name = uuid();
             await createDataSource(name);
-            const updates = await Promise.all(
-                new Array(4)
-                    .fill(0)
-                    .map((_, ii) => `update-${ii}`)
-                    .map(newDescription =>
-                        db.dataSources.createVersion({
-                            name,
-                            versionDescription: newDescription,
-                        })
-                    )
-            );
+            const updates=[];
+            for (let ii=0;ii<4;ii++){
+                const update = await db.dataSources.createVersion({
+                    name,
+                    versionDescription: `update-${ii}`
+                })
+                updates.push(update);
+            }
             const fetchResponse = await db.dataSources.fetch({ name });
             const { _credentials, ...latest } = updates[updates.length - 1];
             expect(fetchResponse).to.eql(latest);
