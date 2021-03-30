@@ -1,6 +1,7 @@
 const { pipelineStatuses } = require('@hkube/consts');
 const { expect } = require('chai');
 const { promisify } = require('util');
+const cloneDeep = require('lodash.clonedeep');
 const connect = require('./connect');
 const { doneStatus } = require('./../lib/MongoDB/Jobs');
 const { generateJob, generateDataSourceJob, generateGraph } = require('./common');
@@ -51,7 +52,7 @@ describe('Jobs', () => {
     });
     it('should ignore undefined graph', async () => {
         const job = generateJob();
-        job.graph.nodes[0].output=undefined;
+        job.graph.nodes[0].output = undefined;
         const { jobId } = job;
         await db.jobs.create(job);
         const res = await db.jobs.fetchGraph({ jobId });
@@ -212,5 +213,43 @@ describe('Jobs', () => {
             inactiveTime: sleepDuration * 2,
         });
         expect(oldInactiveJobs).to.have.lengthOf(2);
+    });
+    describe('handle large collection', () => {
+        before(async ()=>{
+            await db.jobs.delete({tooLarge: true});
+        })
+        afterEach(async ()=>{
+            await db.jobs.delete({tooLarge: true});
+        })
+        it('should search with large collection', async () => {
+            const pipe = {
+                jobId: 'large-jobid',
+                pipeline: {
+                    experimentName: 'main',
+                    flowInput:{
+                        large: 'd'.repeat(1500000)    
+                    },
+                    startTime: Date.now()
+                },
+                tooLarge: true
+            }
+            for (let i = 0; i < 100; i++) {
+                const largeJob = cloneDeep(pipe);
+                largeJob.jobId = `${largeJob.jobId}-${i}`
+                largeJob.pipeline.startTime = largeJob.pipeline.startTime + i*100;
+                await db.jobs.create(largeJob);
+            }
+            const response = await db.jobs.search({
+                experimentName: 'main',
+                sort: { 'pipeline.startTime': 'desc' },
+                limit: 100,
+                fields: {
+                    key: 'jobId',
+                    jobId: true,
+                    pipeline: true,
+                }
+            });
+            expect(response).to.have.lengthOf(100);
+        }).timeout(10000);
     });
 });
