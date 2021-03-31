@@ -250,6 +250,8 @@ describe('Jobs', () => {
                 }
             });
             expect(response).to.have.lengthOf(100);
+            const getOne = await db.jobs.fetch({jobId: `${pipe.jobId}-${20}`})
+            expect(getOne.jobId).to.eql(`${pipe.jobId}-${20}`)
         }).timeout(10000);
     });
 });
