@@ -56,7 +56,8 @@ describe('Collection', () => {
             });
             await expect(promise).to.be.rejectedWith(/connect ECONNREFUSED/i);
         });
-        it('should throw server selection timed out', async () => {
+        // test not deterministic. assumes that the server cannot answer in less than 1 ms
+        xit('should throw server selection timed out', async () => {
             const promise = connect({
                 serverSelectionTimeoutMS: 1,
                 reconnect: true,
