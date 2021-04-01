@@ -123,10 +123,19 @@ describe('Jobs', () => {
         expect(res.status.level).to.eql(level);
     });
     it('should create and update graph', async () => {
-        const jobData = generateJob();
-        const { graph, ...job } = jobData;
+        const job = generateJob();
         const { jobId } = job;
         const graph2 = generateGraph();
+        await db.jobs.create(job);
+        await db.jobs.updateGraph({ jobId, graph: graph2 });
+        const res = await db.jobs.fetch({ jobId });
+        expect(res.graph).to.eql(graph2);
+        expect(res.timestamp).to.not.exist
+    });
+    it('should create and update empty graph', async () => {
+        const job = generateJob();
+        const { jobId } = job;
+        const graph2 = { options: {}, nodes: [], edges: [], jobId, timestamp: Date.now() };
         await db.jobs.create(job);
         await db.jobs.updateGraph({ jobId, graph: graph2 });
         const res = await db.jobs.fetch({ jobId });
