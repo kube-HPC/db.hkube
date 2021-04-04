@@ -17,10 +17,32 @@ const _createDataSource = db => name =>
 
 let createDataSource = null;
 
+/** @type {(name: string, versionsCount: number) => Promise<null>} */
+let createDataSourceWithVersions = null;
+
+/** @type {(db: ProviderInterface) => typeof createDataSourceWithVersions} */
+const _createDataSourceWithVersions = db => async (name, versionsCount) => {
+    await createDataSource(name);
+    const versions = [...new Array(versionsCount).keys()]; // [0, ...versionsCount]
+    for await (const idx of versions) {
+        const response = await db.dataSources.createVersion({
+            name,
+            versionDescription: `version -${idx}`,
+        });
+        await db.dataSources.updateFiles({
+            id: response.id,
+            commitHash: 'upload',
+            files: [],
+        });
+    }
+    return null;
+};
+
 describe('DataSources', () => {
     before(async () => {
         db = await connect();
         createDataSource = _createDataSource(db);
+        createDataSourceWithVersions = _createDataSourceWithVersions(db);
     });
     it('should throw conflict error when name already exists', async () => {
         const name = uuid();
@@ -99,7 +121,9 @@ describe('DataSources', () => {
                 'fileTypes',
                 'totalSize',
                 'avgFileSize',
-                'filesCount'
+                'filesCount',
+                'git',
+                'storage'
             );
             expect(uploadResponse.files).to.have.lengthOf(4);
             expect(uploadResponse.files).to.eql(filesAdded);
@@ -136,41 +160,29 @@ describe('DataSources', () => {
         it('should fetch the latest version given name only', async () => {
             const name = uuid();
             await createDataSource(name);
-            const updates = await Promise.all(
-                new Array(4)
-                    .fill(0)
-                    .map((_, ii) => `update-${ii}`)
-                    .map(newDescription =>
-                        db.dataSources.createVersion({
-                            name,
-                            versionDescription: newDescription,
-                        })
-                    )
-            );
+            const updates=[];
+            for (let ii=0;ii<4;ii++){
+                const update = await db.dataSources.createVersion({
+                    name,
+                    versionDescription: `update-${ii}`
+                })
+                updates.push(update);
+            }
             const fetchResponse = await db.dataSources.fetch({ name });
             const { _credentials, ...latest } = updates[updates.length - 1];
             expect(fetchResponse).to.eql(latest);
         });
         it('should list all the versions of a given dataSource', async () => {
             const name = uuid();
-            await createDataSource(name);
-            const commitHashes = ['a', 'b', 'c', 'd'];
-            for await (let vId of commitHashes) {
-                const nextVersion = await db.dataSources.createVersion({
-                    name,
-                    versionDescription: `created ${vId}`,
-                });
-                await db.dataSources.updateFiles({
-                    id: nextVersion.id,
-                    commitHash: vId,
-                    files: generateMockFiles(),
-                });
-            }
+            const versionsCount = 5;
+            await createDataSourceWithVersions(name, versionsCount);
+            const response = await db.dataSources.listVersions({ name });
+            expect(response).to.have.lengthOf(versionsCount);
             const versionsResponse = await db.dataSources.listVersions({
                 name,
             });
             // all the created versions + the initial version
-            expect(versionsResponse).to.have.lengthOf(commitHashes.length);
+            expect(versionsResponse).to.have.lengthOf(versionsCount);
             versionsResponse.forEach(version => {
                 expect(version).to.haveOwnProperty('id');
                 expect(version).to.haveOwnProperty('versionDescription');
@@ -230,25 +242,134 @@ describe('DataSources', () => {
             const response = await db.dataSources.fetchMany({ names });
             expect(response).to.have.lengthOf(5);
         });
-        it.skip('should fetch the latest version given name only', async () => {
+        it('should fetch the latest version given name only', async () => {
             const name = uuid();
             await createDataSource(name);
-            // I think because this is parallel, you got an error sometimes...
-            const updates = await Promise.all(
-                new Array(4)
-                    .fill(0)
-                    .map((_, ii) => `update-${ii}`)
-                    .map(newDescription =>
-                        db.dataSources.updateFiles({
-                            name,
-                            // @ts-ignore
-                            versionDescription: newDescription,
-                        })
-                    )
-            );
+            const descriptions = new Array(4)
+                .fill(0)
+                .map((_, ii) => `update-${ii}`);
+
+            for await (const versionDescription of descriptions) {
+                const createdVersion = await db.dataSources.createVersion({
+                    name,
+                    versionDescription,
+                });
+                await db.dataSources.updateFiles({
+                    id: createdVersion.id,
+                    files: [],
+                    commitHash: '',
+                });
+            }
+
             const fetchResponse = await db.dataSources.fetch({ name });
-            const latest = updates[updates.length - 1];
-            expect(fetchResponse).to.eql(latest);
+            const latest = descriptions[descriptions.length - 1];
+            expect(fetchResponse.versionDescription).to.eql(latest);
+        });
+    });
+    describe('update credentials', () => {
+        const updatedContent = {
+            git: {
+                token: 'new-token',
+            },
+            storage: {
+                accessKeyId: 'new-id',
+                secretAccessKey: 'new-secret',
+            },
+        };
+        /** @param {import('../lib/DataSource').Credentials} credentials */
+        const createAndUpdateCredentials = async (
+            name,
+            versionsCount,
+            credentials
+        ) => {
+            await createDataSourceWithVersions(name, versionsCount);
+            return db.dataSources.updateCredentials({
+                name,
+                credentials,
+            });
+        };
+
+        it('should update both storage and git', async () => {
+            const name = uuid();
+            const versionsCount = 5;
+            const updatedCount = await createAndUpdateCredentials(
+                name,
+                versionsCount,
+                updatedContent
+            );
+            expect(updatedCount).to.eq(versionsCount + 1); // +1 for the initial version
+            const latest = await db.dataSources.fetchWithCredentials({ name });
+            expect(latest).to.haveOwnProperty('_credentials');
+            expect(latest._credentials).eql(updatedContent);
+        });
+
+        it('should update only storage', async () => {
+            const name = uuid();
+            const versionsCount = 5;
+            const updatedCount = await createAndUpdateCredentials(
+                name,
+                versionsCount,
+                {
+                    storage: updatedContent.storage,
+                }
+            );
+            expect(updatedCount).to.eq(versionsCount + 1); // +1 for the initial version
+            const latest = await db.dataSources.fetchWithCredentials({ name });
+            expect(latest._credentials).to.haveOwnProperty('storage');
+            expect(latest._credentials).not.to.haveOwnProperty('git');
+            expect(latest._credentials.storage).to.eql(updatedContent.storage);
+        });
+        it('should update only git', async () => {
+            const name = uuid();
+            const versionsCount = 5;
+            const updatedCount = await createAndUpdateCredentials(
+                name,
+                versionsCount,
+                {
+                    git: updatedContent.git,
+                }
+            );
+            expect(updatedCount).to.eq(versionsCount + 1); // +1 for the initial version
+            const latest = await db.dataSources.fetchWithCredentials({ name });
+            expect(latest._credentials).to.haveOwnProperty('git');
+            expect(latest._credentials).not.to.haveOwnProperty('storage');
+            expect(latest._credentials.git).to.eql(updatedContent.git);
+        });
+        it('should fail for no storage or git', async () => {
+            const name = uuid();
+            const versionsCount = 5;
+            let response;
+            try {
+                response = await createAndUpdateCredentials(
+                    name,
+                    versionsCount,
+                    {
+                        irrelevant: true,
+                    }
+                );
+            } catch (error) {
+                response = error;
+            }
+            expect(response.type).to.match(/INVALID_PARAMETERS/);
+            expect(response.message).to.match(
+                /missing credentials.storage or credentials.git/i
+            );
+        });
+        it('should fail for not found', async () => {
+            const name = `non-existing-${uuid()}`;
+            let response;
+            try {
+                await db.dataSources.updateCredentials({
+                    name,
+                    credentials: { git: { token: 'irrelevant' } },
+                });
+            } catch (error) {
+                response = error;
+            }
+            expect(response).to.have.ownProperty('metaData');
+            expect(response.metaData).to.have.keys(['entityType', 'id']);
+            expect(response.metaData.entityType).to.match(/datasource/i);
+            expect(response.metaData.id).to.match(/non-existing/i);
         });
     });
 });

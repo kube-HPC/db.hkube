@@ -1,9 +1,10 @@
 const { pipelineStatuses } = require('@hkube/consts');
 const { expect } = require('chai');
 const { promisify } = require('util');
+const cloneDeep = require('lodash.clonedeep');
 const connect = require('./connect');
 const { doneStatus } = require('./../lib/MongoDB/Jobs');
-const { generateJob, generateDataSourceJob } = require('./common');
+const { generateJob, generateDataSourceJob, generateGraph } = require('./common');
 /** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 const sleep = promisify(setTimeout);
@@ -41,6 +42,21 @@ describe('Jobs', () => {
         await db.jobs.create(job);
         const res = await db.jobs.fetchResult({ jobId });
         expect(res).to.eql({ jobId, ...job.result });
+    });
+    it('should create and fetch graph', async () => {
+        const job = generateJob();
+        const { jobId } = job;
+        await db.jobs.create(job);
+        const res = await db.jobs.fetchGraph({ jobId });
+        expect(res).to.eql({ jobId, ...job.graph });
+    });
+    it('should ignore undefined graph', async () => {
+        const job = generateJob();
+        job.graph.nodes[0].output = undefined;
+        const { jobId } = job;
+        await db.jobs.create(job);
+        const res = await db.jobs.fetchGraph({ jobId });
+        expect(res.nodes[0]).to.not.have.property('output');
     });
     it('should create and delete job', async () => {
         const job = generateJob();
@@ -137,6 +153,26 @@ describe('Jobs', () => {
         const res = await db.jobs.fetch({ jobId });
         expect(res.status.level).to.eql(level);
     });
+    it('should create and update graph', async () => {
+        const job = generateJob();
+        const { jobId } = job;
+        const graph2 = generateGraph();
+        await db.jobs.create(job);
+        await db.jobs.updateGraph({ jobId, graph: graph2 });
+        const res = await db.jobs.fetch({ jobId });
+        expect(res.graph).to.eql(graph2);
+        expect(res.timestamp).to.not.exist
+    });
+    it('should create and update empty graph', async () => {
+        const job = generateJob();
+        const { jobId } = job;
+        const graph2 = { options: {}, nodes: [], edges: [], jobId, timestamp: Date.now() };
+        await db.jobs.create(job);
+        await db.jobs.updateGraph({ jobId, graph: graph2 });
+        const res = await db.jobs.fetch({ jobId });
+        expect(res.graph).to.eql(graph2);
+        expect(res.timestamp).to.not.exist
+    });
     it('should create and update pipeline', async () => {
         const job = generateJob();
         const { jobId } = job;
@@ -217,5 +253,45 @@ describe('Jobs', () => {
             inactiveTime: sleepDuration * 2,
         });
         expect(oldInactiveJobs).to.have.lengthOf(2);
+    });
+    describe('handle large collection', () => {
+        before(async ()=>{
+            await db.jobs.delete({tooLarge: true});
+        })
+        afterEach(async ()=>{
+            await db.jobs.delete({tooLarge: true});
+        })
+        it('should search with large collection', async () => {
+            const pipe = {
+                jobId: 'large-jobid',
+                pipeline: {
+                    experimentName: 'main',
+                    flowInput:{
+                        large: 'd'.repeat(1500000)    
+                    },
+                    startTime: Date.now()
+                },
+                tooLarge: true
+            }
+            for (let i = 0; i < 100; i++) {
+                const largeJob = cloneDeep(pipe);
+                largeJob.jobId = `${largeJob.jobId}-${i}`
+                largeJob.pipeline.startTime = largeJob.pipeline.startTime + i*100;
+                await db.jobs.create(largeJob);
+            }
+            const response = await db.jobs.search({
+                experimentName: 'main',
+                sort: { 'pipeline.startTime': 'desc' },
+                limit: 100,
+                fields: {
+                    key: 'jobId',
+                    jobId: true,
+                    pipeline: true,
+                }
+            });
+            expect(response).to.have.lengthOf(100);
+            const getOne = await db.jobs.fetch({jobId: `${pipe.jobId}-${20}`})
+            expect(getOne.jobId).to.eql(`${pipe.jobId}-${20}`)
+        }).timeout(10000);
     });
 });
