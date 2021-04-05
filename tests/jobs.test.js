@@ -71,31 +71,29 @@ describe('Jobs', () => {
     });
     it('should getPipelinesStats', async () => {
         const experimentName = 'aggregate';
-        const job1 = generateJob(null, 'simple1', 'failed', experimentName);
-        const job2 = generateJob(null, 'simple1', 'stopped', experimentName);
-        const job3 = generateJob(null, 'simple1', 'completed', experimentName);
-        const job4 = generateJob(null, 'simple1', 'active', experimentName);
-        const job5 = generateJob(null, 'simple2', 'failed', experimentName);
-        const job6 = generateJob(null, 'simple2', 'failed', experimentName);
-        const job7 = generateJob(null, 'simple3', 'active', experimentName);
-        const job8 = generateJob(null, 'simple3', 'active', experimentName);
-        const job9 = generateJob(null, 'simple4', 'active', experimentName);
-        await db.jobs.create(job1);
-        await db.jobs.create(job2);
-        await db.jobs.create(job3);
-        await db.jobs.create(job4);
-        await db.jobs.create(job5);
-        await db.jobs.create(job6);
-        await db.jobs.create(job7);
-        await db.jobs.create(job8);
-        await db.jobs.create(job9);
-        const limit = 3;
+        const jobsToCreate=[
+            generateJob(null, 'simple2', 'failed', experimentName),
+            generateJob(null, 'simple2', 'failed', experimentName),
+            generateJob(null, 'simple3', 'active', experimentName),
+            generateJob(null, 'simple3', 'active', experimentName),
+            generateJob(null, 'simple4', 'active', experimentName),
+            generateJob(null, 'simple1', 'failed', experimentName),
+            generateJob(null, 'simple1', 'stopped', experimentName),
+            generateJob(null, 'simple1', 'completed', experimentName),
+            generateJob(null, 'simple1', 'active', experimentName),
+        ]
+        jobsToCreate.forEach((j,i)=>j.pipeline.startTime = Date.now()+i*1000)
+        for (const j of jobsToCreate) {
+            await db.jobs.create(j);
+        }
+        const limit = 5;
         const response = await db.jobs.getPipelinesStats({
             pipelineType: 'stored',
             experimentName,
             limit,
         });
-        expect(response).to.have.lengthOf(limit);
+        const totalResults = response.reduce((s1, r)=>s1+r.stats.reduce(((s2,s)=>s2+s.count),0),0)
+        expect(totalResults).to.eql(limit);
         const pipeline = response.find(r => r.name === 'simple1');
         const stats = pipeline.stats.map(s => s.status).sort();
         expect(stats).to.eql(['active', 'completed', 'failed', 'stopped']);
