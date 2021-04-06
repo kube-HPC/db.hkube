@@ -71,7 +71,7 @@ describe('Jobs', () => {
         expect(res2).to.eql({ deleted: 1 });
         expect(response).to.be.null;
     });
-    it('should get pipelines', async () => {
+    it('should get pipelines and truncate large objects', async () => {
         const experimentName = uuid();
         const jobsToCreate = [
             generateJob(null, 'simple2', 'failed', experimentName),
@@ -82,6 +82,7 @@ describe('Jobs', () => {
             j.pipeline.flowInput = { large: 'd'.repeat((i + 1) * 1000) }
             j.pipeline.flowInput2 = { large: 'd'.repeat((i + 1) * 1000) }
             j.pipeline.flowInput3 = { large: 'd'.repeat((i + 1) * 1000) }
+            j.status.largeObject = { large: 'd'.repeat((i + 1) * 1000) }
         })
         for (const j of jobsToCreate) {
             await db.jobs.create(j);
@@ -89,15 +90,46 @@ describe('Jobs', () => {
         const pipelines = await db.jobs.getPipelines({
             experimentName,
             limit: 10,
-            itemsToRemove: ['pipeline.flowInput', 'pipeline.flowInput3'],
+            itemsToRemove: ['pipeline.flowInput', 'pipeline.flowInput3', 'status.largeObject'],
             maxItemsSize: 1100
         })
         expect(pipelines[1].pipeline.flowInput.large).to.have.lengthOf(1000)
         expect(pipelines[1].pipeline.flowInput2.large).to.have.lengthOf(1000)
         expect(pipelines[0].pipeline.flowInput.truncated).to.eql('Size of object (2017) is larger than 1100')
         expect(pipelines[0].pipeline.flowInput3.truncated).to.eql('Size of object (2017) is larger than 1100')
+        expect(pipelines[0].status.largeObject.truncated).to.eql('Size of object (2017) is larger than 1100')
         expect(pipelines[0].pipeline.flowInput2.large).to.have.lengthOf(2000)
     })
+
+    it('should get pipelines and not truncate large objects', async () => {
+        const experimentName = uuid();
+        const jobsToCreate = [
+            generateJob(null, 'simple2', 'failed', experimentName),
+            generateJob(null, 'simple2', 'failed', experimentName),
+        ]
+        jobsToCreate.forEach((j, i) => {
+            j.pipeline.startTime = Date.now() + i * 1000
+            j.pipeline.flowInput = { large: 'd'.repeat((i + 1) * 1000) }
+            j.pipeline.flowInput2 = { large: 'd'.repeat((i + 1) * 1000) }
+            j.pipeline.flowInput3 = { large: 'd'.repeat((i + 1) * 1000) }
+            j.status.largeObject = { large: 'd'.repeat((i + 1) * 1000) }
+        })
+        for (const j of jobsToCreate) {
+            await db.jobs.create(j);
+        }
+        const pipelines = await db.jobs.getPipelines({
+            experimentName,
+            limit: 10
+        })
+        expect(pipelines[1].pipeline.flowInput.large).to.have.lengthOf(1000)
+        expect(pipelines[1].pipeline.flowInput2.large).to.have.lengthOf(1000)
+        expect(pipelines[0].pipeline.flowInput.large).to.have.lengthOf(2000)
+        expect(pipelines[0].pipeline.flowInput3.large).to.have.lengthOf(2000)
+        expect(pipelines[0].status.largeObject.large).to.have.lengthOf(2000)
+        expect(pipelines[0].pipeline.flowInput2.large).to.have.lengthOf(2000)
+    })
+
+
     it('should getPipelinesStats', async () => {
         const experimentName = 'aggregate';
         const jobsToCreate = [
