@@ -11,6 +11,69 @@ describe('DataSources', () => {
     before(async () => {
         db = await connect();
     });
+    it('should fail creating multiple snapshots with the same name on the same dataSource', async () => {
+        const name = uuid();
+        const snapshotName = uuid();
+        const dataSource = await db.dataSources.create({
+            name,
+            git: null,
+            storage: null,
+        });
+        await db.snapshots.create({
+            name: snapshotName,
+            dataSource: { name, id: dataSource.id },
+            filteredFilesList: [],
+            droppedFiles: [],
+            query: 'irrelevant',
+        });
+        let didThrow = false;
+        try {
+            await db.snapshots.create({
+                name: snapshotName,
+                dataSource: { name, id: dataSource.id },
+                filteredFilesList: [],
+                droppedFiles: [],
+                query: 'irrelevant',
+            });
+        } catch (error) {
+            didThrow = true;
+            expect(error.type).to.eq('CONFLICT');
+        }
+        expect(didThrow).to.be.true;
+    });
+    it('should succeed creating a snapshot with the same name on different datSources', async () => {
+        const name_a = uuid();
+        const name_b = uuid();
+        const snapshotName = uuid();
+        const dataSource_a = await db.dataSources.create({
+            name: name_a,
+            git: null,
+            storage: null,
+        });
+        const dataSource_b = await db.dataSources.create({
+            name: name_b,
+            git: null,
+            storage: null,
+        });
+        let createdBoth = false;
+        await db.snapshots.create({
+            dataSource: { name: dataSource_a.name, id: dataSource_a.id },
+            name: snapshotName,
+            query: '',
+            droppedFiles: [],
+            filteredFilesList: [],
+        });
+        await db.snapshots.create({
+            dataSource: { name: dataSource_b.name, id: dataSource_b.id },
+            name: snapshotName,
+            query: '',
+            droppedFiles: [],
+            filteredFilesList: [],
+        });
+        createdBoth = true;
+        expect(createdBoth).to.be.true;
+    });
+
     describe('fetch dataSource', () => {
         it('should fetch dataSource by snapshot', async () => {
             const name = uuid();
