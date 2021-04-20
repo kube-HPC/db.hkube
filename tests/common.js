@@ -185,6 +185,11 @@ const generateExperiment = () => ({
     description: 'this is new description for new experiment',
 });
 
+const generateGateway = () => ({
+    name: uuid(),
+    description: 'this is new description for new gateway',
+});
+
 const generatePipelineDriver = () => ({
     name: `pipeline-driver-${uuid()}`,
     image: 'hkube/pipeline-driver',
@@ -281,11 +286,11 @@ const generateDataSourceNode = ({ id = uuid(), asSnapshot = false } = {}) => ({
     kind: 'dataSource',
     dataSource: asSnapshot
         ? {
-              snapshot: {
-                  name: uuid(),
-              },
-              name: uuid(),
-          }
+            snapshot: {
+                name: uuid(),
+            },
+            name: uuid(),
+        }
         : { id },
 });
 
@@ -313,6 +318,7 @@ module.exports = {
     generateResult,
     generateJob,
     generateExperiment,
+    generateGateway,
     generatePipelineDriver,
     generateAlgorithmReadme,
     generatePipelineReadme,
