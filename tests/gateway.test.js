@@ -46,7 +46,7 @@ describe.only('Gateways', () => {
         const name = gateway.name;
         await db.gateways.create(gateway);
         const res1 = await db.gateways.fetch({ name });
-        const res2 = await db.gateways.delete({ name });
+        const res2 = await db.gateways.deleteByJob({ jobId });
         const response = await db.gateways.fetch({ name });
         expect(res1).to.eql(gateway);
         expect(res2).to.eql({ deleted: 1 });
