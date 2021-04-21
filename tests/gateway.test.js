@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const connect = require('./connect');
 const { generateGateway } = require('./common');
+const uuid = require('uuid').v4;
 
 /** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
@@ -13,11 +14,14 @@ describe('Gateways', () => {
         const response = await db.gateways.fetch({ name: 'no_such' });
         expect(response).to.be.null;
     });
-    it('should create and fetch gateway', async () => {
-        const gateway = generateGateway();
+    it.only('should create and fetch gateway', async () => {
+        const node = uuid();
+        const gateway = generateGateway(node);
         await db.gateways.create(gateway);
         const res = await db.gateways.fetch(gateway);
         expect(res).to.eql(gateway);
+        const res2 = await db.gateways.search({ job: 'jobID', node });
+        expect(res2[0]).to.eql(gateway);
     });
     it('should create and update gateway', async () => {
         const gateway = generateGateway();

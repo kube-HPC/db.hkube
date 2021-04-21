@@ -185,8 +185,10 @@ const generateExperiment = () => ({
     description: 'this is new description for new experiment',
 });
 
-const generateGateway = () => ({
+const generateGateway = node => ({
     name: uuid(),
+    node,
+    job: 'jobID',
     description: 'this is new description for new gateway',
 });
 
@@ -286,11 +288,11 @@ const generateDataSourceNode = ({ id = uuid(), asSnapshot = false } = {}) => ({
     kind: 'dataSource',
     dataSource: asSnapshot
         ? {
-            snapshot: {
-                name: uuid(),
-            },
-            name: uuid(),
-        }
+              snapshot: {
+                  name: uuid(),
+              },
+              name: uuid(),
+          }
         : { id },
 });
 
