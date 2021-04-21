@@ -56,9 +56,9 @@ const generateBuild = (algorithm, progress) => ({
     },
 });
 
-const generatePipeline = () => ({
+const generatePipeline = experimentName => ({
     name: `pipeline-${uuid()}`,
-    experimentName: `experimentName-${uuid()}`,
+    experimentName: experimentName || `experimentName-${uuid()}`,
     nodes: [
         {
             nodeName: 'green',
@@ -99,6 +99,7 @@ const generatePipeline = () => ({
     envVars: {
         'and.nested': 'bla',
     },
+    startTime: Date.now(),
     types: ['stored', 'cron', 'stream'],
 });
 
@@ -139,11 +140,11 @@ const generateGraph = () => ({
     ],
 });
 
-const generateStatus = (useUnixTime = false) => ({
+const generateStatus = (useUnixTime = false, pipeline, status) => ({
     timestamp: useUnixTime ? Date.now() : new Date().toUTCString(),
-    status: 'active',
+    status: status || 'active',
     level: 'debug',
-    pipeline: `DAG-${uuid()}`,
+    pipeline: pipeline || `DAG-${uuid()}`,
     data: {
         progress: 0,
         states: {
@@ -166,11 +167,16 @@ const generateResult = (useUnixTime = false) => ({
     timeTook: 2163.044,
 });
 
-const generateJob = (useUnixTime = false) => ({
+const generateJob = (
+    useUnixTime = false,
+    pipeline,
+    status,
+    experimentName
+) => ({
     jobId: `jobId-${uuid()}`,
-    pipeline: generatePipeline(),
+    pipeline: generatePipeline(experimentName),
     graph: generateGraph(),
-    status: generateStatus(useUnixTime),
+    status: generateStatus(useUnixTime, pipeline, status),
     result: generateResult(useUnixTime),
 });
 
