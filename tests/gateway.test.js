@@ -14,13 +14,14 @@ describe('Gateways', () => {
         const response = await db.gateways.fetch({ name: 'no_such' });
         expect(response).to.be.null;
     });
-    it.only('should create and fetch gateway', async () => {
+    it('should create and fetch gateway', async () => {
         const node = uuid();
-        const gateway = generateGateway(node);
+        const jobId = uuid();
+        const gateway = generateGateway(node, jobId);
         await db.gateways.create(gateway);
         const res = await db.gateways.fetch(gateway);
         expect(res).to.eql(gateway);
-        const res2 = await db.gateways.search({ job: 'jobID', node });
+        const res2 = await db.gateways.search({ jobId, node });
         expect(res2[0]).to.eql(gateway);
     });
     it('should create and update gateway', async () => {
