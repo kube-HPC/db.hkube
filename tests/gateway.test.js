@@ -6,7 +6,7 @@ const uuid = require('uuid').v4;
 /** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 
-describe.only('Gateways', () => {
+describe('Gateways', () => {
     before(async () => {
         db = await connect();
     });
