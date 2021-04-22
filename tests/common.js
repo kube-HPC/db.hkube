@@ -185,10 +185,10 @@ const generateExperiment = () => ({
     description: 'this is new description for new experiment',
 });
 
-const generateGateway = ({ nodeName, jobId }) => ({
+const generateGateway = () => ({
     name: uuid(),
-    nodeName,
-    jobId,
+    nodeName: uuid(),
+    jobId: uuid(),
     description: 'this is new description for new gateway',
 });
 
