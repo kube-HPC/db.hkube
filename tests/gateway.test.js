@@ -16,7 +16,6 @@ describe('Gateways', () => {
     });
     it('should create and fetch gateway', async () => {
         const gateway = generateGateway();
-        
         await db.gateways.create(gateway);
         const res = await db.gateways.fetch(gateway);
         expect(res).to.eql(gateway);
