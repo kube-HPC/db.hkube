@@ -185,6 +185,13 @@ const generateExperiment = () => ({
     description: 'this is new description for new experiment',
 });
 
+const generateGateway = () => ({
+    name: uuid(),
+    nodeName: uuid(),
+    jobId: uuid(),
+    description: 'this is new description for new gateway',
+});
+
 const generatePipelineDriver = () => ({
     name: `pipeline-driver-${uuid()}`,
     image: 'hkube/pipeline-driver',
@@ -313,6 +320,7 @@ module.exports = {
     generateResult,
     generateJob,
     generateExperiment,
+    generateGateway,
     generatePipelineDriver,
     generateAlgorithmReadme,
     generatePipelineReadme,

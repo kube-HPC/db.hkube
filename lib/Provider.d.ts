@@ -4,6 +4,7 @@ import { DataSourcesCollection } from './DataSource';
 import { AlgorithmsInterface } from './Algorithm';
 import Jobs from './MongoDB/Jobs';
 import Experiments from './MongoDB/Experiments';
+import Gateways from './MongoDB/Gateways';
 import TensorBoards from './MongoDB/TensorBoards';
 export interface ProviderInterface {
     init(): Promise<void>;
@@ -15,6 +16,7 @@ export interface ProviderInterface {
     algorithms: AlgorithmsInterface;
     jobs: Jobs;
     experiments: Experiments;
+    gateways: Gateways;
     tensorboards: TensorBoards;
     readme: Collection<any>;
     webhooks: Collection<any>;
