@@ -15,13 +15,12 @@ describe('Gateways', () => {
         expect(response).to.be.null;
     });
     it('should create and fetch gateway', async () => {
-        const nodeName = uuid();
-        const jobId = uuid();
         const gateway = generateGateway();
+        
         await db.gateways.create(gateway);
         const res = await db.gateways.fetch(gateway);
         expect(res).to.eql(gateway);
-        const res2 = await db.gateways.search({ jobId:gateway.jobId, nodeName:gateway.nodeName });
+        const res2 = await db.gateways.search({ jobId: gateway.jobId, nodeName: gateway.nodeName });
         expect(res2[0]).to.eql(gateway);
     });
     it('should create and update gateway', async () => {
@@ -40,7 +39,6 @@ describe('Gateways', () => {
         expect(res.description).to.eql(description);
     });
     it('should create and delete gateway', async () => {
-
         const gateway = generateGateway();
         const name = gateway.name;
         await db.gateways.create(gateway);
@@ -52,17 +50,9 @@ describe('Gateways', () => {
         expect(response).to.be.null;
     });
     it('should create and fetch version list', async () => {
-        let nodeName = uuid();
-        let jobId = uuid();
-        const gateway1 = generateGateway({ nodeName, jobId });
-        nodeName = uuid();
-        jobId = uuid();
-        const gateway2 = generateGateway({ nodeName, jobId });
-        nodeName = uuid();
-        jobId = uuid();
-        const gateway3 = generateGateway({ nodeName, jobId });
-        nodeName = uuid();
-        jobId = uuid();
+        const gateway1 = generateGateway();
+        const gateway2 = generateGateway();
+        const gateway3 = generateGateway();
         await db.gateways.create(gateway1);
         await db.gateways.create(gateway2);
         await db.gateways.create(gateway3);
