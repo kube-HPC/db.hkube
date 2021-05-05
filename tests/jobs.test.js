@@ -2,7 +2,7 @@ const { pipelineStatuses } = require('@hkube/consts');
 const { expect } = require('chai');
 const { promisify } = require('util');
 const cloneDeep = require('lodash.clonedeep');
-const {v4: uuid} = require('uuid');
+const { v4: uuid } = require('uuid');
 
 const connect = require('./connect');
 const { doneStatus } = require('./../lib/MongoDB/Jobs');
@@ -175,6 +175,55 @@ describe('Jobs', () => {
         });
         expect(response).to.have.lengthOf(1);
         expect(response[0]).to.eql(jobData);
+    });
+    it('should search jobs with non existing', async () => {
+        const job = generateJob();
+        const { experimentName, name: pipelineName } = job.pipeline;
+        const pipelineType = job.pipeline.types[1];
+        const algorithmName = job.pipeline.nodes[1].algorithmName;
+        job.userPipeline = job.pipeline;
+        for (const i of [...(new Array(5))] ){
+            const jobData = {...job, jobId: uuid()}
+            await db.jobs.create(jobData);
+        }
+        const jobDataMissing = {...job, jobId: uuid()}
+        delete jobDataMissing.userPipeline;
+        await db.jobs.create(jobDataMissing);
+        const response = await db.jobs.search({
+            experimentName,
+            pipelineName,
+            pipelineType,
+            algorithmName,
+            exists: {
+                userPipeline: false
+            }
+        });
+        expect(response).to.have.lengthOf(1);
+        expect(response[0]).to.eql(jobDataMissing);
+    });
+    it('should search jobs with existing', async () => {
+        const job = generateJob();
+        const { experimentName, name: pipelineName } = job.pipeline;
+        const pipelineType = job.pipeline.types[1];
+        const algorithmName = job.pipeline.nodes[1].algorithmName;
+        job.userPipeline = job.pipeline;
+        for (const i of [...(new Array(5))] ){
+            const jobData = {...job, jobId: uuid()}
+            await db.jobs.create(jobData);
+        }
+        const jobDataMissing = {...job, jobId: uuid()}
+        delete jobDataMissing.userPipeline;
+        await db.jobs.create(jobDataMissing);
+        const response = await db.jobs.search({
+            experimentName,
+            pipelineName,
+            pipelineType,
+            algorithmName,
+            exists: {
+                userPipeline: true
+            }
+        });
+        expect(response).to.have.lengthOf(5);
     });
     it('should search not running job by multi params', async () => {
         const jobData = generateJob();
