@@ -8,8 +8,9 @@ const DBConnection = require('./../');
 const openConnections = [];
 
 /** @param {MongoClientOptions} config */
-const connect = async (config = {}, provider = undefined) => {
+const connect = async (config = {}, provider = undefined, createIndices = false) => {
     /** @type {ProviderInterface} */
+
     const db = DBConnection(
         {
             mongo: {
@@ -25,7 +26,7 @@ const connect = async (config = {}, provider = undefined) => {
         },
         provider
     );
-    await db.init();
+    await db.init({ createIndices });
     openConnections.push(db);
     return db;
 };
