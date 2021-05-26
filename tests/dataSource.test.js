@@ -1,26 +1,15 @@
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
-const connect = require('./connect');
-const { generateEntries, generateMockFiles } = require('./utils');
-
+const { generateEntries, generateMockFiles } = require('./common');
 const commitHash = 'my-hash';
-
-/** @typedef {import('../lib/DataSource').FileMeta} FileMeta */
-/** @typedef {import('../lib/Provider').ProviderInterface} ProviderInterface */
-/** @type {ProviderInterface} */
 let db = null;
-
-/** @param {ProviderInterface} db */
-const _createDataSource = db => name =>
-    /** @ts-ignore */
-    db.dataSources.create({ name, git: null, storage: null });
-
 let createDataSource = null;
 
-/** @type {(name: string, versionsCount: number) => Promise<null>} */
+const _createDataSource = db => name =>
+    db.dataSources.create({ name, git: null, storage: null });
+
 let createDataSourceWithVersions = null;
 
-/** @type {(db: ProviderInterface) => typeof createDataSourceWithVersions} */
 const _createDataSourceWithVersions = db => async (name, versionsCount) => {
     await createDataSource(name);
     const versions = [...new Array(versionsCount).keys()]; // [0, ...versionsCount]
@@ -40,7 +29,7 @@ const _createDataSourceWithVersions = db => async (name, versionsCount) => {
 
 describe('DataSources', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
         createDataSource = _createDataSource(db);
         createDataSourceWithVersions = _createDataSourceWithVersions(db);
     });
@@ -105,7 +94,6 @@ describe('DataSources', () => {
             const name = uuid();
             const created = await createDataSource(name);
             expect(created.isPartial).to.be.true;
-            /** @type {FileMeta[]} */
             const filesAdded = generateMockFiles();
             const uploadResponse = await db.dataSources.updateFiles({
                 name,
@@ -160,8 +148,8 @@ describe('DataSources', () => {
         it('should fetch the latest version given name only', async () => {
             const name = uuid();
             await createDataSource(name);
-            const updates=[];
-            for (let ii=0;ii<4;ii++){
+            const updates = [];
+            for (let ii = 0; ii < 4; ii++) {
                 const update = await db.dataSources.createVersion({
                     name,
                     versionDescription: `update-${ii}`
@@ -351,9 +339,7 @@ describe('DataSources', () => {
                 response = error;
             }
             expect(response.type).to.match(/INVALID_PARAMETERS/);
-            expect(response.message).to.match(
-                /missing credentials.storage or credentials.git/i
-            );
+            expect(response.message).to.match(/missing credentials.storage or credentials.git/i);
         });
         it('should fail for not found', async () => {
             const name = `non-existing-${uuid()}`;

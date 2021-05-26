@@ -1,13 +1,10 @@
 const { expect } = require('chai');
-const connect = require('./connect');
 const { generatePipelineDriver } = require('./common');
-
-/** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 
 describe('PipelineDrivers', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     it('should not throw error itemNotFound', async () => {
         const response = await db.pipelineDrivers.fetch({ name: 'no_such' });

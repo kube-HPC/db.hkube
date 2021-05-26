@@ -5,9 +5,8 @@
     "main": "index.js",
     "scripts": {
         "lint": "eslint .",
-        "format": "prettier --write .",
         "start:compose": "docker-compose up -d && sleep 5 && ./scripts/startReplicas.sh",
-        "test": "NODE_ENV=test ./node_modules/mocha/bin/_mocha tests --colors --recursive --exit",
+        "test": "NODE_ENV=test ./node_modules/mocha/bin/_mocha tests --timeout=10000 --colors --recursive --exit",
         "test:cov": "NODE_ENV=test ./node_modules/nyc/bin/nyc.js --reporter=html --reporter=text --reporter=lcov npm run test",
         "coverage": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
         "build": "npm publish"
@@ -19,7 +18,8 @@
         "lodash.clonedeep": "^4.5.0",
         "lodash.merge": "^4.6.2",
         "moment": "^2.29.1",
-        "mongodb": "^3.6.4"
+        "mongodb": "^3.6.4",
+        "performance-now": "^2.1.0"
     },
     "devDependencies": {
         "@types/chai-as-promised": "^7.1.3",
@@ -31,15 +31,11 @@
         "eslint": "^7.19.0",
         "eslint-config-airbnb": "^18.2.1",
         "eslint-config-airbnb-base": "^14.2.1",
-        "eslint-config-prettier": "^7.2.0",
         "eslint-plugin-chai-friendly": "^0.6.0",
         "eslint-plugin-import": "^2.22.1",
         "eslint-plugin-jsdoc": "^31.6.1",
-        "eslint-plugin-prettier": "^3.3.1",
         "mocha": "^6.2.0",
         "nyc": "^15.1.0",
-        "prettier": "^2.2.1",
-        "prettier-plugin-jsdoc": "^0.3.9",
         "uuid": "^8.3.2"
     }
 }

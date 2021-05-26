@@ -1,6 +1,5 @@
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
-const connect = require('./connect');
 const {
     generateAlgorithm,
     generateVersion,
@@ -8,11 +7,10 @@ const {
     generateAlgorithmReadme,
 } = require('./common');
 
-/** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 describe('Algorithms', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     it('should not throw error itemNotFound', async () => {
         const algorithm = generateAlgorithm();
@@ -55,8 +53,7 @@ describe('Algorithms', () => {
         const res3 = await db.algorithms.fetchAll({ query: { cpu } });
         expect(res1.inserted).to.eql(res2.length);
     });
-    it('``should throw on create many``', async () => {
-        const db = await connect();
+    it('should throw on create many', async () => {
         const alg1 = generateAlgorithm();
         const alg2 = generateAlgorithm();
         await db.algorithms.createMany([alg1, alg2]);
@@ -66,12 +63,10 @@ describe('Algorithms', () => {
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
     it('should throw on delete many', async () => {
-        const db = await connect();
         const promise = db.algorithms.deleteMany({ cpu: 99 });
         await expect(promise).to.be.rejectedWith(/could not find/i);
     });
     it('should update many', async () => {
-        const db = await connect();
         const cpu1 = Math.random() * 1000;
         const cpu2 = Math.random() * 1000;
         const algorithm1 = generateAlgorithm({ cpu: cpu1 });

@@ -1,15 +1,12 @@
 const { ObjectId } = require('mongodb');
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
-const connect = require('./connect');
-const { generateMockFiles } = require('./utils');
-
-/** @type {import('../lib/Provider').ProviderInterface} */
+const { generateMockFiles } = require('./common');
 let db = null;
 
 describe('DataSources', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     it('should fail creating multiple snapshots with the same name on the same dataSource', async () => {
         const name = uuid();

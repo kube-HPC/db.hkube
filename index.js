@@ -9,7 +9,6 @@ const providers = {
     mongo: MongoDB,
 };
 
-/** @type {(config: Config, provider?: ProviderName) => ProviderInterface} */
 const DBConnection = (config, provider = 'mongo') => {
     const DBProvider = providers[provider];
     if (!DBProvider) {
@@ -23,7 +22,6 @@ const DBConnection = (config, provider = 'mongo') => {
     if (!providerConfig) {
         throw new Error(`invalid config for provider ${provider}`);
     }
-    // @ts-ignore
     return new DBProvider(providerConfig);
 };
 

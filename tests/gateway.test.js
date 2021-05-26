@@ -1,14 +1,11 @@
 const { expect } = require('chai');
-const connect = require('./connect');
 const { generateGateway } = require('./common');
 const uuid = require('uuid').v4;
-
-/** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 
 describe('Gateways', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     it('should not throw error itemNotFound', async () => {
         const response = await db.gateways.fetch({ name: 'no_such' });
@@ -42,7 +39,7 @@ describe('Gateways', () => {
         const name = gateway.name;
         await db.gateways.create(gateway);
         const res1 = await db.gateways.fetch({ name });
-        const res2 = await db.gateways.deleteByJob({jobId: gateway.jobId });
+        const res2 = await db.gateways.deleteByJob({ jobId: gateway.jobId });
         const response = await db.gateways.fetch({ name });
         expect(res1).to.eql(gateway);
         expect(res2).to.eql({ deleted: 1 });

@@ -1,13 +1,10 @@
 const { expect } = require('chai');
-const connect = require('./connect');
 const { generateAlgorithm, generateVersion } = require('./common');
-
-/** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 
 describe('Versions', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     it('should not throw error itemNotFound', async () => {
         const algorithm = generateAlgorithm();
