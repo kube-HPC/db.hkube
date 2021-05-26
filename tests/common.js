@@ -167,13 +167,9 @@ const generateResult = (useUnixTime = false) => ({
     timeTook: 2163.044,
 });
 
-const generateJob = (
-    useUnixTime = false,
-    pipeline,
-    status,
-    experimentName
-) => ({
+const generateJob = ({ useUnixTime, pipeline, status, experimentName, number }) => ({
     jobId: `jobId-${uuid()}`,
+    number,
     pipeline: generatePipeline(experimentName),
     graph: generateGraph(),
     status: generateStatus(useUnixTime, pipeline, status),
@@ -288,16 +284,16 @@ const generateDataSourceNode = ({ id = uuid(), asSnapshot = false } = {}) => ({
     kind: 'dataSource',
     dataSource: asSnapshot
         ? {
-              snapshot: {
-                  name: uuid(),
-              },
-              name: uuid(),
-          }
+            snapshot: {
+                name: uuid(),
+            },
+            name: uuid(),
+        }
         : { id },
 });
 
 const generateDataSourceJob = () => {
-    let job = generateJob(true);
+    let job = generateJob({ useUnixTime: true });
     return {
         ...job,
         pipeline: {

@@ -23,7 +23,6 @@ const DBConnection = (config, provider = 'mongo') => {
     if (!providerConfig) {
         throw new Error(`invalid config for provider ${provider}`);
     }
-    // @ts-ignore
     return new DBProvider(providerConfig);
 };
 

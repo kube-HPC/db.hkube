@@ -12,7 +12,6 @@ let db = null;
 
 /** @param {ProviderInterface} db */
 const _createDataSource = db => name =>
-    /** @ts-ignore */
     db.dataSources.create({ name, git: null, storage: null });
 
 let createDataSource = null;
@@ -160,8 +159,8 @@ describe('DataSources', () => {
         it('should fetch the latest version given name only', async () => {
             const name = uuid();
             await createDataSource(name);
-            const updates=[];
-            for (let ii=0;ii<4;ii++){
+            const updates = [];
+            for (let ii = 0; ii < 4; ii++) {
                 const update = await db.dataSources.createVersion({
                     name,
                     versionDescription: `update-${ii}`

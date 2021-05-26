@@ -13,25 +13,21 @@ const generateMockPipelineNames = (amount = 5) =>
 describe('Collection', () => {
     describe('setup', () => {
         it('should throw invalid provider error', () => {
-            // @ts-expect-error
             expect(() => DBConnection({}, 'invalid-provider')).to.throw(
                 /invalid provider/i
             );
         });
         it('should throw invalid config error', () => {
-            // @ts-expect-error
             expect(() => DBConnection({ invalid: '' })).to.throw(
                 /invalid config/i
             );
         });
         it('should throw missing user name', async () => {
             await expect(
-                // @ts-expect-error
                 connect({ auth: { password: 'a' } })
             ).to.be.rejectedWith(/you did not provide user/i);
         });
         it('should throw missing password', async () => {
-            // @ts-expect-error
             await expect(connect({ auth: { user: 'a' } })).to.be.rejectedWith(
                 /you did not provide password/i
             );
@@ -147,7 +143,6 @@ describe('Collection', () => {
         });
         it.skip('should throw an error if no id or name is provided', async () => {
             const db = await connect();
-            // @ts-expect-error
             await expect(db.dataSources.fetch()).to.be.rejected;
             await expect(db.dataSources.fetch({})).to.be.rejected;
         });

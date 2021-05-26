@@ -7,7 +7,8 @@ chai.use(chaiAsPromised);
 
 before(async () => {
     // need to clean the test db ?
-    await connect({}, undefined, { createIndices: true });
+    const db = await connect({}, undefined, { createIndices: true });
+    await db.db.dropDatabase();
 });
 
 after(async () => {

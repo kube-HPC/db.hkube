@@ -1,37 +1,37 @@
 module.exports = {
-    extends: ['airbnb-base', 'plugin:prettier/recommended'],
-    env: {
-        es6: true,
-        node: true,
-        mocha: true,
+    "extends": ["airbnb-base"],
+    "env": {
+        "es6": true,
+        "node": true,
+        "mocha": true
     },
-    globals: {
-        Atomics: 'readonly',
-        SharedArrayBuffer: 'readonly',
+    "plugins": [
+        "chai-friendly"
+    ],
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": 2020
     },
-    plugins: ['chai-friendly', 'prettier', 'jsdoc'],
-    parserOptions: {
-        sourceType: 'module',
-        ecmaVersion: 2020,
-    },
-    rules: {
-        'jsdoc/require-param': 1,
-        'jsdoc/check-param-names': 1,
-        'jsdoc/require-param-name': 1,
-        'jsdoc/check-tag-names': 0,
-        'jsdoc/check-types': 1,
-        'jsdoc/require-param-type': 1,
-        'jsdoc/require-returns-type': 1,
-        'no-console': [1, { allow: ['info', 'warn', 'error'] }],
-        'import/no-useless-path-segments': [0],
-        'no-nested-ternary': [0],
-        'import/no-named-as-default-member': [0],
-        'import/no-named-as-default': [0],
-        'prefer-template': 'error',
-        'no-use-before-define': 'warn',
-        'no-var': 'error',
-        'no-underscore-dangle': 'off',
-        'class-methods-use-this': 'off',
-        'no-unused-expressions': 0,
-    },
+    "rules": {
+        "no-param-reassign": "error",
+        "prefer-template": "error",
+        "no-trailing-spaces": "error",
+        "no-console": "error",
+        "no-use-before-define": "warn",
+        "object-curly-spacing": "error",
+        "no-var": "error",
+        "import/newline-after-import": "error",
+        "max-len": ["error", 200],
+        "brace-style": ["error", "stroustrup"],
+        "indent": ["warn", 4],
+        "comma-dangle": "off",
+        "no-underscore-dangle": "off",
+        "linebreake-style": "off",
+        "object-curly-newline": "off",
+        "newline-per-chained-call": "off",
+        "arrow-body-style": "off",
+        "arrow-parens": "off",
+        "class-methods-use-this": "off",
+        "no-unused-expressions": 0
+    }
 };
