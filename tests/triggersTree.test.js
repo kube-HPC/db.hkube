@@ -1,11 +1,11 @@
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
-const connect = require('./connect');
-const { generateTensorboard } = require('./common');
 
 describe('TriggersTree', () => {
+    before(async () => {
+        db = global.testParams.db;
+    });
     it('should create and fetch triggers tree', async () => {
-        const db = await connect();
         const name = uuid();
         const rootJobId = uuid();
         const rootJobName = name;

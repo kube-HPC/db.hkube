@@ -3,7 +3,7 @@ const uuid = require('uuid').v4;
 const DBConnection = require('./../');
 const connect = require('./connect');
 const { ObjectID } = require('mongodb');
-const { generateEntries } = require('./utils');
+const { generateEntries } = require('./common');
 // a valid mongo ObjectID;
 const nonExistingId = new ObjectID().toHexString();
 
@@ -11,6 +11,9 @@ const generateMockPipelineNames = (amount = 5) =>
     new Array(amount).fill(0).map((_, idx) => `pipeline-${idx}-${uuid()}`);
 
 describe('Collection', () => {
+    after(async () => {
+        await Promise.all(connect.openConnections.map(connection => connection.close()));
+    });
     describe('setup', () => {
         it('should throw invalid provider error', () => {
             expect(() => DBConnection({}, 'invalid-provider')).to.throw(
@@ -181,7 +184,6 @@ describe('Collection', () => {
             );
         });
     });
-
     describe('fetch many', () => {
         it('should throw missing ids and names', async () => {
             const db = await connect();

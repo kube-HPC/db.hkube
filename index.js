@@ -9,7 +9,6 @@ const providers = {
     mongo: MongoDB,
 };
 
-/** @type {(config: Config, provider?: ProviderName) => ProviderInterface} */
 const DBConnection = (config, provider = 'mongo') => {
     const DBProvider = providers[provider];
     if (!DBProvider) {

@@ -3,17 +3,14 @@ const { expect } = require('chai');
 const { promisify } = require('util');
 const cloneDeep = require('lodash.clonedeep');
 const { v4: uuid } = require('uuid');
-
-const connect = require('./connect');
 const { doneStatus } = require('./../lib/MongoDB/Jobs');
 const { generateJob, generateDataSourceJob, generateGraph } = require('./common');
-/** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 const sleep = promisify(setTimeout);
 
 describe('Jobs', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     describe('Crud', () => {
         it('should not throw error itemNotFound', async () => {
@@ -362,27 +359,101 @@ describe('Jobs', () => {
         });
     });
     describe('Pagination', () => {
-        it.only('should search not running job by multi params', async () => {
+        before(async () => {
             const numOfJobs = 200;
-            const jobData = Array.from(Array(numOfJobs).keys()).map(k => generateJob({ number: k }));
-            await Promise.all(jobData.map(j => db.jobs.create(j)));
-            const res1 = await db.jobs.searchApi({
+            const startTime = new Date('2021-03-11T14:30:00').getTime();
+            const jobs = Array.from(Array(numOfJobs).keys()).map(k => {
+                const number = k + 1;
+                return generateJob({
+                    number,
+                    startTime: startTime + number * 60000
+                });
+            });
+            await Promise.all(jobs.map(j => db.jobs.create(j)));
+        })
+        it('should throw invalid cursor', async () => {
+            const promise = db.jobs.searchApi({
+                cursor: 'invalid_cursor'
+            });
+            await expect(promise).to.be.rejectedWith(/please provide a valid cursor/i);
+        });
+        it('should search with dates range of one hour', async () => {
+            const hour = 60;
+            const res = await db.jobs.searchApi({
                 query: {
-                    hasResult: true,
-                    // datesRange: {
-                    //     from: '2021-03-11T14:30:00',
-                    //     to: '2021-03-11T15:30:00'
-                    // }
+                    datesRange: {
+                        from: '2021-03-11T14:30:00',
+                        to: '2021-03-11T15:31:00'
+                    }
                 },
-                limit: 10,
+                sort: { 'pipeline.startTime': 'asc' },
+                fields: {
+                    jobId: true,
+                    number: true,
+                    pipeline: true
+                }
+            });
+            expect(res.hits).to.have.lengthOf(hour);
+            expect(res.hits[0].number).to.eql(1);
+            expect(res.hits[res.hits.length - 1].number).to.eql(hour);
+        });
+        it('should search with page number', async () => {
+            const limit = 10;
+            const request = {
+                limit,
+                query: {
+                    pipelineType: 'stored'
+                },
+                sort: { 'pipeline.startTime': 'asc' },
+                fields: {
+                    jobId: true,
+                    number: true,
+                    pipeline: true
+                }
+            }
+            const res1 = await db.jobs.searchApi({
                 pageNum: 1,
-                sort: { _id: 'asc' },
+                ...request,
+
             });
             const res2 = await db.jobs.searchApi({
-                cursor: res1.cursor
+                pageNum: 2,
+                ...request,
             });
-            expect(response).to.have.lengthOf(1);
-            expect(response[0]).to.eql(jobData);
+            expect(res1.hits).to.have.lengthOf(limit);
+            expect(res1.hits[0].number).to.eql(1);
+            expect(res1.hits[limit - 1].number).to.eql(limit);
+            expect(res2.hits).to.have.lengthOf(limit);
+            expect(res2.hits[0].number).to.eql(limit + 1);
+            expect(res2.hits[limit - 1].number).to.eql(limit * 2);
+        });
+        it('should search with cursor', async () => {
+            const limit = 10;
+            const request = {
+                limit,
+                query: {
+                    pipelineType: 'stored'
+                },
+                sort: { 'pipeline.startTime': 'asc' },
+                fields: {
+                    jobId: true,
+                    number: true,
+                    pipeline: true
+                }
+            }
+            const res1 = await db.jobs.searchApi({
+                ...request,
+            });
+            const res2 = await db.jobs.searchApi({
+                cursor: res1.cursor,
+                ...request,
+            });
+            expect(res1.hits).to.have.lengthOf(limit);
+            expect(res1.hits[0].number).to.eql(1);
+            expect(res1.hits[limit - 1].number).to.eql(limit);
+            expect(res2.hits).to.have.lengthOf(limit);
+            expect(res2.hits[0].number).to.eql(limit + 1);
+            expect(res2.hits[limit - 1].number).to.eql(limit * 2);
         });
     });
     describe('handle large collection', () => {

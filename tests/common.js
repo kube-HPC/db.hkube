@@ -1,4 +1,5 @@
 const uuid = require('uuid').v4;
+const { dummyFile } = require('./mocks');
 
 const generateAlgorithm = options => ({
     name: options?.name || `alg-${uuid()}`,
@@ -56,7 +57,7 @@ const generateBuild = (algorithm, progress) => ({
     },
 });
 
-const generatePipeline = experimentName => ({
+const generatePipeline = ({ startTime, experimentName } = {}) => ({
     name: `pipeline-${uuid()}`,
     experimentName: experimentName || `experimentName-${uuid()}`,
     nodes: [
@@ -99,7 +100,7 @@ const generatePipeline = experimentName => ({
     envVars: {
         'and.nested': 'bla',
     },
-    startTime: Date.now(),
+    startTime: startTime || Date.now(),
     types: ['stored', 'cron', 'stream'],
 });
 
@@ -167,10 +168,10 @@ const generateResult = (useUnixTime = false) => ({
     timeTook: 2163.044,
 });
 
-const generateJob = ({ useUnixTime, pipeline, status, experimentName, number }) => ({
+const generateJob = ({ useUnixTime, pipeline, status, experimentName, startTime, number = 1 } = {}) => ({
     jobId: `jobId-${uuid()}`,
     number,
-    pipeline: generatePipeline(experimentName),
+    pipeline: generatePipeline({ startTime, experimentName }),
     graph: generateGraph(),
     status: generateStatus(useUnixTime, pipeline, status),
     result: generateResult(useUnixTime),
@@ -306,6 +307,29 @@ const generateDataSourceJob = () => {
     };
 };
 
+const generateEntries = amount => {
+    const names = new Array(amount).fill(0).map(() => uuid());
+    return {
+        names,
+        entries: names.map(name => ({
+            name,
+            files: [dummyFile],
+            git: null,
+            storage: null,
+        })),
+    };
+};
+
+const generateMockFiles = (amount = 4) =>
+    new Array(amount).fill(0).map((file, ii) => ({
+        id: `file-${ii}`,
+        name: `file-${ii}-${uuid()}`,
+        path: `path-${ii}`,
+        size: 1,
+        type: Math.random() > 0.5 ? 'csv' : 'md',
+        uploadedAt: new Date().getTime(),
+    }));
+
 module.exports = {
     generateAlgorithm,
     generateVersion,
@@ -324,4 +348,6 @@ module.exports = {
     generateWebhook,
     generateDataSourceNode,
     generateDataSourceJob,
+    generateEntries,
+    generateMockFiles
 };

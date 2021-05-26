@@ -1,13 +1,10 @@
 const { expect } = require('chai');
-const connect = require('./connect');
 const { generateWebhook } = require('./common');
-
-/** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 
 describe('Webhooks-Status', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     it('should not throw error itemNotFound', async () => {
         const webhook = generateWebhook();

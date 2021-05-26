@@ -1,13 +1,10 @@
 const { expect } = require('chai');
-const connect = require('./connect');
 const { generateTensorboard } = require('./common');
-
-/** @type {import('../lib/Provider').ProviderInterface} */
 let db = null;
 
 describe('Tensorboards', () => {
     before(async () => {
-        db = await connect();
+        db = global.testParams.db;
     });
     it('should not throw error itemNotFound', async () => {
         const board = generateTensorboard();
@@ -57,7 +54,6 @@ describe('Tensorboards', () => {
         expect(response).to.be.null;
     });
     it('should create and search board list', async () => {
-        const db = await connect();
         const board1 = generateTensorboard();
         const board2 = generateTensorboard();
         const board3 = generateTensorboard();

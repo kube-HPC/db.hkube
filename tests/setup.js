@@ -2,15 +2,29 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(process.cwd(), '.env.test') });
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
-const connect = require('./connect');
+const connect = require('../index');
 chai.use(chaiAsPromised);
 
+const config = {
+    mongo: {
+        auth: {
+            user: process.env.DB_USER_NAME,
+            password: process.env.DB_PASSWORD,
+        },
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT, 10),
+        dbName: process.env.DB_NAME,
+    },
+}
+
 before(async () => {
-    // need to clean the test db ?
-    const db = await connect({}, undefined, { createIndices: true });
+    const db = connect(config);
+    await db.init();
     await db.db.dropDatabase();
+    await db.init({ createIndices: true });
+    global.testParams = {
+        db
+    }
 });
 
-after(async () => {
-    await Promise.all(connect.openConnections.map(connection => connection.close()));
-});
+
