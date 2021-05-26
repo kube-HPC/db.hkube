@@ -131,6 +131,43 @@ describe('Algorithms', () => {
             readme: 1,
         });
     });
+    it('should create and delete algorithm with dependencies of type debug', async () => {
+        const algorithm = generateAlgorithm();
+        algorithm.kind = 'debug';
+        const version1 = generateVersion(algorithm);
+        const version2 = generateVersion(algorithm);
+        const build1 = generateBuild(algorithm);
+        const build2 = generateBuild(algorithm);
+        const readme = generateAlgorithmReadme(algorithm);
+
+        await db.algorithms.create(algorithm);
+        await db.algorithms.versions.create(version1);
+        await db.algorithms.versions.create(version2);
+        await db.algorithms.builds.create(build1);
+        await db.algorithms.builds.create(build2);
+        await db.algorithms.readme.create(readme);
+
+        const res = await db.algorithms.delete({ name: algorithm.name, kind: 'debug' });
+        expect(res).to.eql({
+            algorithms: 1,
+            versions: 2,
+            builds: 2,
+            readme: 1,
+        });
+    });
+    it('should create and delete algorithm with dependencies of type debug', async () => {
+        const algorithm = generateAlgorithm();
+        await db.algorithms.create(algorithm);
+
+
+        const res = await db.algorithms.delete({ name: algorithm.name, kind: 'debug' });
+        expect(res).to.eql({
+            algorithms: 0,
+            versions: 0,
+            builds: 0,
+            readme: 0
+        });
+    });
     it('should create and search algorithms', async () => {
         const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid()}` });
         const algorithm2 = generateAlgorithm({ name: `alg-blue-${uuid()}` });

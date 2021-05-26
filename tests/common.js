@@ -7,6 +7,7 @@ const generateAlgorithm = options => ({
     cpu: options?.cpu || 1,
     mem: '256Mi',
     env: options?.env || 'python',
+    kind: 'algorithm',
     options: {
         debug: false,
         pending: false,
