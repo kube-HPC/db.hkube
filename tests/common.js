@@ -57,7 +57,7 @@ const generateBuild = (algorithm, progress) => ({
     },
 });
 
-const generatePipeline = ({ startTime, experimentName } = {}) => ({
+const generatePipeline = ({ startTime, experimentName, pipelineType } = {}) => ({
     name: `pipeline-${uuid()}`,
     experimentName: experimentName || `experimentName-${uuid()}`,
     nodes: [
@@ -101,7 +101,7 @@ const generatePipeline = ({ startTime, experimentName } = {}) => ({
         'and.nested': 'bla',
     },
     startTime: startTime || Date.now(),
-    types: ['stored', 'cron', 'stream'],
+    types: pipelineType || ['stored', 'cron', 'stream'],
 });
 
 const generateGraph = () => ({
@@ -168,10 +168,10 @@ const generateResult = (useUnixTime = false) => ({
     timeTook: 2163.044,
 });
 
-const generateJob = ({ useUnixTime, pipeline, status, experimentName, startTime, number = 1 } = {}) => ({
+const generateJob = ({ useUnixTime, pipeline, status, experimentName, startTime, pipelineType, number = 1 } = {}) => ({
     jobId: `jobId-${uuid()}`,
     number,
-    pipeline: generatePipeline({ startTime, experimentName }),
+    pipeline: generatePipeline({ startTime, experimentName, pipelineType }),
     graph: generateGraph(),
     status: generateStatus(useUnixTime, pipeline, status),
     result: generateResult(useUnixTime),
