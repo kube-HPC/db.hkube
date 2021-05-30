@@ -366,6 +366,7 @@ describe('Jobs', () => {
                 const number = k + 1;
                 return generateJob({
                     number,
+                    pipelineType: ['pagination'],
                     startTime: startTime + number * 60000
                 });
             });
@@ -384,9 +385,10 @@ describe('Jobs', () => {
                     datesRange: {
                         from: '2021-03-11T14:30:00',
                         to: '2021-03-11T15:31:00'
-                    }
+                    },
+                    pipelineType: 'pagination'
                 },
-                sort: { 'pipeline.startTime': 'asc' },
+                sort: 'asc',
                 fields: {
                     jobId: true,
                     number: true,
@@ -402,9 +404,9 @@ describe('Jobs', () => {
             const request = {
                 limit,
                 query: {
-                    pipelineType: 'stored'
+                    pipelineType: 'pagination'
                 },
-                sort: { 'pipeline.startTime': 'asc' },
+                sort: 'asc',
                 fields: {
                     jobId: true,
                     number: true,
@@ -427,14 +429,14 @@ describe('Jobs', () => {
             expect(res2.hits[0].number).to.eql(limit + 1);
             expect(res2.hits[limit - 1].number).to.eql(limit * 2);
         });
-        it('should search with cursor', async () => {
+        it('should search with cursor asc sort', async () => {
             const limit = 10;
             const request = {
                 limit,
                 query: {
-                    pipelineType: 'stored'
+                    pipelineType: 'pagination'
                 },
-                sort: { 'pipeline.startTime': 'asc' },
+                sort: 'asc',
                 fields: {
                     jobId: true,
                     number: true,
@@ -454,6 +456,34 @@ describe('Jobs', () => {
             expect(res2.hits).to.have.lengthOf(limit);
             expect(res2.hits[0].number).to.eql(limit + 1);
             expect(res2.hits[limit - 1].number).to.eql(limit * 2);
+        });
+        it('should search with cursor desc sort', async () => {
+            const limit = 10;
+            const request = {
+                limit,
+                query: {
+                    pipelineType: 'pagination'
+                },
+                sort: 'desc',
+                fields: {
+                    jobId: true,
+                    number: true,
+                    pipeline: true
+                }
+            }
+            const res1 = await db.jobs.searchApi({
+                ...request,
+            });
+            const res2 = await db.jobs.searchApi({
+                cursor: res1.cursor,
+                ...request,
+            });
+            expect(res1.hits).to.have.lengthOf(limit);
+            expect(res1.hits[0].number).to.eql(200);
+            expect(res1.hits[limit - 1].number).to.eql(191);
+            expect(res2.hits).to.have.lengthOf(limit);
+            expect(res2.hits[0].number).to.eql(190);
+            expect(res2.hits[limit - 1].number).to.eql(181);
         });
     });
     describe('handle large collection', () => {
@@ -483,7 +513,7 @@ describe('Jobs', () => {
             }
             const response = await db.jobs.search({
                 experimentName: 'main',
-                sort: { 'pipeline.startTime': 'desc' },
+                sort: 'desc',
                 limit: 100,
                 fields: {
                     key: 'jobId',
