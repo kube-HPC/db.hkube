@@ -155,7 +155,7 @@ describe('Algorithms', () => {
             readme: 1,
         });
     });
-    it('should create and delete algorithm with dependencies of type debug', async () => {
+    it('should create and not delete algorithm with dependencies of type debug', async () => {
         const algorithm = generateAlgorithm();
         await db.algorithms.create(algorithm);
 
@@ -167,6 +167,8 @@ describe('Algorithms', () => {
             builds: 0,
             readme: 0
         });
+
+
     });
     it('should create and search algorithms', async () => {
         const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid()}` });
