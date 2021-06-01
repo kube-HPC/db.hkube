@@ -411,6 +411,9 @@ describe('Jobs', () => {
                     jobId: true,
                     number: true,
                     pipeline: true
+                },
+                exists: {
+                    jobId: true
                 }
             }
             const res1 = await db.jobs.searchApi({
