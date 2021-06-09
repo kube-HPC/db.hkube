@@ -158,8 +158,6 @@ describe('Algorithms', () => {
     it('should create and not delete algorithm with dependencies of type debug', async () => {
         const algorithm = generateAlgorithm();
         await db.algorithms.create(algorithm);
-
-
         const res = await db.algorithms.delete({ name: algorithm.name, kind: 'debug' });
         expect(res).to.eql({
             algorithms: 0,
