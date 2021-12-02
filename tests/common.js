@@ -22,6 +22,21 @@ const generateAlgorithm = options => ({
     type: 'Image',
 });
 
+const generateTask = ({ jobId, nodeName, status, batchIndex } = {}) => ({
+    jobId: jobId || uuid(),
+    taskId: uuid(),
+    input: [],
+    output: {
+        path: uuid(),
+    },
+    nodeName: nodeName || `node-${uuid()}`,
+    podName: `pod-${uuid()}`,
+    status: status || 'created',
+    batchIndex: batchIndex || 1,
+    startTime: Date.now(),
+    endTime: Date.now(),
+});
+
 const generateVersion = (algorithm, semver) => {
     const version = uuid();
     return {
@@ -333,6 +348,7 @@ const generateMockFiles = (amount = 4) =>
 
 module.exports = {
     generateAlgorithm,
+    generateTask,
     generateVersion,
     generateBuild,
     generatePipeline,

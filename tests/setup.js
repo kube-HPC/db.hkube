@@ -8,12 +8,13 @@ chai.use(chaiAsPromised);
 const config = {
     mongo: {
         auth: {
-            user: process.env.DB_USER_NAME,
+            username: process.env.DB_USER_NAME,
             password: process.env.DB_PASSWORD,
         },
         host: process.env.DB_HOST,
         port: parseInt(process.env.DB_PORT, 10),
         dbName: process.env.DB_NAME,
+        replicaSet: process.env.REPLICA_SET,
     },
 }
 

@@ -12,6 +12,7 @@ yarn-error.log*
 *~
 
 # Runtime data
+mongo-data
 pids
 *.pid
 *.seed

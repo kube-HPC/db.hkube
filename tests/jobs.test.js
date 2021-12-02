@@ -358,6 +358,56 @@ describe('Jobs', () => {
             expect(oldInactiveJobs).to.have.lengthOf(2);
         });
     });
+    describe('Watch', () => {
+        it.only('should watch on task update', async () => {
+            let resolveStatus;
+            let resolveResult;
+            const promiseStatus = new Promise((res) => { resolveStatus = res; });
+            const promiseResult = new Promise((res) => { resolveResult = res; });
+
+            const job = generateJob();
+            await db.jobs.create(job);
+            const { jobId } = job;
+
+            await db.jobs.watchStatus({}, (job) => {
+                resolveStatus(job);
+            });
+            await db.jobs.watchResult({}, (job) => {
+                resolveResult(job);
+            });
+
+            db.jobs.updateStatus({ jobId, status: 'completed' });
+            db.jobs.updateResult({ jobId, data: { res: 42 } });
+            const status = await promiseStatus;
+            const result = await promiseResult;
+            expect(status.status).to.eql('completed');
+            expect(result.data.res).to.eql(42);
+        });
+        it('should watch on task update', async () => {
+            let resolveStatus;
+            let resolveResult;
+            const promiseStatus = new Promise((res) => { resolveStatus = res; });
+            const promiseResult = new Promise((res) => { resolveResult = res; });
+
+            const job = generateJob();
+            await db.jobs.create(job);
+            const { jobId } = job;
+
+            await db.jobs.watchStatus({ jobId }, (job) => {
+                resolveStatus(job);
+            });
+            await db.jobs.watchResult({ jobId }, (job) => {
+                resolveResult(job);
+            });
+
+            db.jobs.updateStatus({ jobId, status: 'completed' });
+            db.jobs.updateResult({ jobId, data: { res: 42 } });
+            const status = await promiseStatus;
+            const result = await promiseResult;
+            expect(status.status).to.eql('completed');
+            expect(result.data.res).to.eql(42);
+        });
+    });
     describe('Pagination', () => {
         before(async () => {
             const numOfJobs = 200;
