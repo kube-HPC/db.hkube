@@ -66,7 +66,7 @@ describe('Collection', () => {
                 /Server selection timed out/i
             );
         });
-        it('should bootstrap MongoDB connection amd disconnect', async () => {
+        it('should bootstrap MongoDB connection and disconnect', async () => {
             const db = await connect();
             expect(db.isConnected).to.be.true;
             await db.close();

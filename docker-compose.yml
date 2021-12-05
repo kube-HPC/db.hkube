@@ -6,12 +6,12 @@ services:
     hostname: mongodb
     container_name: mongodb
     command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-    # environment:
-    #   - MONGO_INITDB_ROOT_USERNAME=tester
-    #   - MONGO_INITDB_ROOT_PASSWORD=password
-    #   - MONGO_INITDB_DATABASE=tests
-    # # volumes:    
-    #   - "$PWD/mongo-entrypoint/:/docker-entrypoint-initdb.d/"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_DATABASE=admin
+    volumes:    
+      - "$PWD/mongo-entrypoint/:/docker-entrypoint-initdb.d/"
     ports:
       - 27017:27017
     network_mode: host

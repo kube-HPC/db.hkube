@@ -22,9 +22,9 @@ const generateAlgorithm = options => ({
     type: 'Image',
 });
 
-const generateTask = ({ jobId, nodeName, status, batchIndex } = {}) => ({
+const generateTask = ({ jobId, taskId, nodeName, status, batchIndex } = {}) => ({
     jobId: jobId || uuid(),
-    taskId: uuid(),
+    taskId: taskId || uuid(),
     input: [],
     output: {
         path: uuid(),

@@ -1,10 +1,10 @@
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
-const {
-    generateTask,
-} = require('./common');
-
+const { promisify } = require('util');
+const { generateTask } = require('./common');
+const sleep = promisify(setTimeout);
 let db = null;
+
 describe('Tasks', () => {
     before(async () => {
         db = global.testParams.db;
@@ -20,18 +20,11 @@ describe('Tasks', () => {
         const promise = db.tasks.create(task);
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
-    it('should create and fetch task', async () => {
+    it.only('should create and fetch task', async () => {
         const task = generateTask();
         const res1 = await db.tasks.create(task);
         const res2 = await db.tasks.fetch({ taskId: task.taskId });
         expect(res1).to.eql(res2);
-    });
-    it('should create and update task', async () => {
-        const task = generateTask();
-        await db.tasks.create(task);
-        await db.tasks.update({ taskId: task.taskId, status: 'success' });
-        const res = await db.tasks.fetch({ taskId: task.taskId });
-        expect(res).to.eql(res2);
     });
     it('should create many', async () => {
         const taskCount = 5000;
@@ -42,14 +35,19 @@ describe('Tasks', () => {
         // const res2 = await db.tasks.fetchAll({ query: { cpu } });
         // expect(res1.inserted).to.eql(res2.length);
     });
-    it.only('should update many', async () => {
+    it('should update many tasks status', async () => {
         const taskCount = 5000;
         const jobId = uuid();
         const nodeName = uuid();
+        const status = 'completed';
         const tasks = Array.from(Array(taskCount).keys()).map(t => generateTask({ jobId, nodeName }));
-        const res2 = await db.tasks.updateTasksStatus({ jobId, nodeName, status: 'completed' });
-        const res3 = await db.tasks.search({ jobId });
-        expect(res1.inserted).to.eql(res2.length);
+        const tasksIds = tasks.map(t => t.taskId);
+        await db.tasks.createMany(tasks);
+        await db.tasks.updateTasksStatus({ jobId, nodeName, tasksIds, status });
+        const res = await db.tasks.search({ jobId });
+        const statuses = res.map(t => t.status);
+        const expected = Array.from(Array(taskCount).keys()).map(t => status);
+        expect(statuses).to.eql(expected);
     });
     it('should throw on create many', async () => {
         const taskId1 = uuid();
@@ -86,7 +84,7 @@ describe('Tasks', () => {
         const status = 'completed';
         const taskId = task.taskId;
         await db.tasks.create(task);
-        await db.tasks.update({ taskId, data: { status } });
+        await db.tasks.update({ taskId, status });
         const res = await db.tasks.fetch({ taskId });
         expect(res).to.eql({ ...task, status });
     });
@@ -95,15 +93,15 @@ describe('Tasks', () => {
         const status = 'completed';
         const taskId = task.taskId;
         await db.tasks.create(task);
-        await db.tasks.patch({ taskId, data: { status } });
+        await db.tasks.patch({ taskId, status });
         const res = await db.tasks.fetch({ taskId });
         expect(res).to.eql({ ...task, status });
     });
-    it('should create and patch nested prop', async () => {
+    it('should create and update nested prop', async () => {
         const task = generateTask();
         const taskId = task.taskId;
         await db.tasks.create(task);
-        await db.tasks.patch({ taskId, data: { output: { path: 'bla' } } });
+        await db.tasks.update({ taskId, output: { path: 'bla' } });
         const res = await db.tasks.fetch({ taskId });
         expect(res.output.path).to.eql('bla');
     });
@@ -138,40 +136,7 @@ describe('Tasks', () => {
         const list = await db.tasks.count({ query: { jobId } });
         expect(list).to.eql(4);
     });
-    it.skip('should watch on task create', async () => {
-        let resolve;
-        const promise = new Promise((res) => { resolve = res; });
-
-        const task = generateTask();
-
-        await db.tasks.watch({ jobId: task.jobId }, (doc) => {
-            resolve();
-        });
-        await db.tasks.create(task);
-        await promise;
-    });
-    it('should watch on task update', async () => {
-        let resolve;
-        const promise = new Promise((res) => { resolve = res; });
-
-        const task = generateTask();
-        const { jobId, taskId } = task;
-        const status1 = 'active';
-        const status2 = 'completed';
-        let count = 0;
-
-        await db.tasks.watch({ jobId }, (doc) => {
-            count++;
-            if (count === 2) {
-                resolve();
-            }
-        });
-        await db.tasks.create(task);
-        db.tasks.update({ jobId, taskId, status: status1 });
-        db.tasks.update({ jobId, taskId, status: status2 });
-        await promise;
-    });
-    it('should watch on multiple tasks', async () => {
+    it('should watch on task create', async () => {
         let resolve;
         let count = 0;
         const promise = new Promise((res) => { resolve = res; });
@@ -182,13 +147,36 @@ describe('Tasks', () => {
 
         await db.tasks.watch({ jobId }, (doc) => {
             count++;
-            if (count === 3) {
+            if (count === 2) {
                 resolve();
             }
         });
+        await sleep(100);
         await db.tasks.create(task1);
         await db.tasks.create(task2);
         await db.tasks.create(task3);
+        await promise;
+    });
+    it('should watch on multiple tasks', async () => {
+        let taskCount = 5000;
+        const jobId = uuid();
+        const nodeName = uuid();
+        const status = 'completed';
+        const tasks = Array.from(Array(taskCount).keys()).map(t => generateTask({ jobId, nodeName }));
+        const tasksIds = tasks.map(t => t.taskId);
+        await db.tasks.createMany(tasks);
+
+        let resolve;
+        const promise = new Promise((res) => { resolve = res; });
+
+        await db.tasks.watch({ jobId }, (doc) => {
+            taskCount--;
+            if (taskCount === 0) {
+                resolve();
+            }
+        });
+        await sleep(100);
+        await db.tasks.updateTasksStatus({ jobId, nodeName, tasksIds, status });
         await promise;
     });
 });

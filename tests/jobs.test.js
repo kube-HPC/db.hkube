@@ -359,11 +359,9 @@ describe('Jobs', () => {
         });
     });
     describe('Watch', () => {
-        it.only('should watch on task update', async () => {
+        it('should watch on job status', async () => {
             let resolveStatus;
-            let resolveResult;
             const promiseStatus = new Promise((res) => { resolveStatus = res; });
-            const promiseResult = new Promise((res) => { resolveResult = res; });
 
             const job = generateJob();
             await db.jobs.create(job);
@@ -372,39 +370,25 @@ describe('Jobs', () => {
             await db.jobs.watchStatus({}, (job) => {
                 resolveStatus(job);
             });
-            await db.jobs.watchResult({}, (job) => {
-                resolveResult(job);
-            });
 
             db.jobs.updateStatus({ jobId, status: 'completed' });
-            db.jobs.updateResult({ jobId, data: { res: 42 } });
             const status = await promiseStatus;
-            const result = await promiseResult;
             expect(status.status).to.eql('completed');
-            expect(result.data.res).to.eql(42);
         });
-        it('should watch on task update', async () => {
-            let resolveStatus;
+        it('should watch on job result', async () => {
             let resolveResult;
-            const promiseStatus = new Promise((res) => { resolveStatus = res; });
             const promiseResult = new Promise((res) => { resolveResult = res; });
 
             const job = generateJob();
             await db.jobs.create(job);
             const { jobId } = job;
 
-            await db.jobs.watchStatus({ jobId }, (job) => {
-                resolveStatus(job);
-            });
             await db.jobs.watchResult({ jobId }, (job) => {
                 resolveResult(job);
             });
 
-            db.jobs.updateStatus({ jobId, status: 'completed' });
             db.jobs.updateResult({ jobId, data: { res: 42 } });
-            const status = await promiseStatus;
             const result = await promiseResult;
-            expect(status.status).to.eql('completed');
             expect(result.data.res).to.eql(42);
         });
     });
