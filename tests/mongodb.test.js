@@ -25,22 +25,6 @@ describe('Collection', () => {
                 /invalid config/i
             );
         });
-        it('should throw missing user name', async () => {
-            await expect(
-                connect({ auth: { password: 'a' } })
-            ).to.be.rejectedWith(/you did not provide user/i);
-        });
-        it('should throw missing password', async () => {
-            await expect(connect({ auth: { user: 'a' } })).to.be.rejectedWith(
-                /you did not provide password/i
-            );
-        });
-        it('should throw Authentication failed', async () => {
-            const promise = connect({
-                user: 'no_such_user',
-            });
-            await expect(promise).to.be.rejectedWith(/Authentication failed/i);
-        });
         it.skip('should throw ENOTFOUND', async () => {
             const promise = connect({
                 host: 'no_such_host',

@@ -15,7 +15,7 @@ const connect = async (config = {}, provider = undefined, createIndices = false)
         {
             mongo: {
                 auth: {
-                    user: config.user || process.env.DB_USER_NAME,
+                    username: config.user || process.env.DB_USER_NAME,
                     password: config.password || process.env.DB_PASSWORD,
                 },
                 host: config.host || process.env.DB_HOST,

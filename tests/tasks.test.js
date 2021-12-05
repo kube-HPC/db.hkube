@@ -20,7 +20,7 @@ describe('Tasks', () => {
         const promise = db.tasks.create(task);
         await expect(promise).to.be.rejectedWith(/could not create/i);
     });
-    it.only('should create and fetch task', async () => {
+    it('should create and fetch task', async () => {
         const task = generateTask();
         const res1 = await db.tasks.create(task);
         const res2 = await db.tasks.fetch({ taskId: task.taskId });

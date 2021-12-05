@@ -14,7 +14,6 @@ const config = {
         host: process.env.DB_HOST,
         port: parseInt(process.env.DB_PORT, 10),
         dbName: process.env.DB_NAME,
-        replicaSet: process.env.REPLICA_SET,
     },
 }
 

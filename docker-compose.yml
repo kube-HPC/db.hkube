@@ -1,21 +1,66 @@
-version: "3.8"
-
+version: '3.8'
 services:
-  mongodb:
-    image: mongo:4.4.1-bionic
-    hostname: mongodb
-    container_name: mongodb
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
-      - MONGO_INITDB_DATABASE=admin
-    volumes:    
-      - "$PWD/mongo-entrypoint/:/docker-entrypoint-initdb.d/"
-    ports:
-      - 27017:27017
-    network_mode: host
-    healthcheck:
-      test: test $$(echo "rs.initiate({_id:'rs0',members:[{_id:0,host:\"localhost:27017\"}]}).ok || rs.status().ok" | mongo --port 27017 --quiet) -eq 1
-      interval: 10s
-      start_period: 30s
+    mongo-0.mongo:
+        hostname: mongo-0.mongo
+        container_name: mongo-0.mongo
+        image: mongo:4.4.1-bionic
+        command: bash -c "mongod --keyFile /data/file.key --replSet rs --journal --bind_ip_all"
+        ports:
+            - '27017:27017'
+        links:
+            - mongo-1.mongo:mongo-1.mongo
+            - mongo-2.mongo:mongo-2.mongo
+        restart: always
+        networks:
+            - mongo-net
+        volumes:
+            - './scripts/mongo.setup.sh:/scripts/setup.sh'
+            - './keys/mongodb.key:/data/file.key'
+
+    mongo-1.mongo:
+        hostname: mongo-1.mongo
+        container_name: mongo-1.mongo
+        image: mongo:4.4.1-bionic
+        entrypoint:
+            [
+                'mongod',
+                '--keyFile',
+                '/data/file.key',
+                '--replSet',
+                'rs',
+                '--journal',
+                '--bind_ip_all',
+            ]
+        ports:
+            - '27019:27017'
+        restart: always
+        networks:
+            - mongo-net
+        volumes:
+            - './keys/mongodb.key:/data/file.key'
+
+    mongo-2.mongo:
+        hostname: mongo-2.mongo
+        container_name: mongo-2.mongo
+        image: mongo:4.4.1-bionic
+        entrypoint:
+            [
+                'mongod',
+                '--keyFile',
+                '/data/file.key',
+                '--replSet',
+                'rs',
+                '--journal',
+                '--bind_ip_all',
+            ]
+        ports:
+            - '27018:27017'
+        restart: always
+        networks:
+            - mongo-net
+        volumes:
+            - './keys/mongodb.key:/data/file.key'
+
+networks:
+    mongo-net:
+        name: mongo-net
