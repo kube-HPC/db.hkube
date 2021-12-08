@@ -26,15 +26,6 @@ describe('Tasks', () => {
         const res2 = await db.tasks.fetch({ taskId: task.taskId });
         expect(res1).to.eql(res2);
     });
-    it('should create many', async () => {
-        const taskCount = 5000;
-        const tasks = Array.from(Array(taskCount).keys()).map(generateTask);
-        console.time('createMany')
-        const res1 = await db.tasks.createMany(tasks);
-        console.timeEnd('createMany')
-        // const res2 = await db.tasks.fetchAll({ query: { cpu } });
-        // expect(res1.inserted).to.eql(res2.length);
-    });
     it('should update many tasks status', async () => {
         const taskCount = 5000;
         const jobId = uuid();
