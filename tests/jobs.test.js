@@ -371,7 +371,7 @@ describe('Jobs', () => {
                 resolveStatus(job);
             });
 
-            db.jobs.updateStatus({ jobId, status: 'completed' });
+            await db.jobs.updateStatus({ jobId, status: 'completed' });
             const status = await promiseStatus;
             expect(status.status).to.eql('completed');
         });
@@ -387,7 +387,7 @@ describe('Jobs', () => {
                 resolveResult(job);
             });
 
-            db.jobs.updateResult({ jobId, data: { res: 42 } });
+            await db.jobs.updateResult({ jobId, data: { res: 42 } });
             const result = await promiseResult;
             expect(result.data.res).to.eql(42);
         });
