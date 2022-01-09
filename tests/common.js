@@ -1,6 +1,6 @@
 const uuid = require('uuid').v4;
 const { dummyFile } = require('./mocks');
-
+const { devenvTypes } = require('@hkube/consts');
 const generateAlgorithm = options => ({
     name: options?.name || `alg-${uuid()}`,
     algorithmImage: `hkube/algorithm-${uuid()}`,
@@ -277,6 +277,13 @@ const generateTensorboard = () => ({
     },
 });
 
+
+const generateDevenv = () => ({
+    name: uuid(),
+    type: devenvTypes.JUPYTER
+});
+
+
 const generateWebhook = () => ({
     jobId: uuid(),
     type: 'progress',
@@ -366,5 +373,6 @@ module.exports = {
     generateDataSourceNode,
     generateDataSourceJob,
     generateEntries,
-    generateMockFiles
+    generateMockFiles,
+    generateDevenv
 };
