@@ -29,7 +29,7 @@ jobs:
             - run: npm ci
             - name: setup
               run: |
-                  npm run start:compose
+                  npm run start:mongo
             - name: lint and test
               run: |
                   npm run lint
