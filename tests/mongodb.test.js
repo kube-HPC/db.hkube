@@ -35,6 +35,7 @@ describe('Collection', () => {
         it('should throw ECONNREFUSED', async () => {
             const promise = connect({
                 port: 9999,
+                connectionMethod: 'mongodb',
                 serverSelectionTimeoutMS: 500,
             });
             await expect(promise).to.be.rejectedWith(/connect ECONNREFUSED/i);
