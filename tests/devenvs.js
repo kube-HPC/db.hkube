@@ -7,7 +7,7 @@ describe('Devenvs', () => {
         db = global.testParams.db;
     });
     beforeEach(async () => {
-        await db.devenvs.delete({ });
+        await db.devenvs.deleteMany({}, { queryInnerId: false, allowNotFound: true });
     });
     it('should not throw error itemNotFound', async () => {
         const response = await db.devenvs.fetch({name: 'notExist'});
