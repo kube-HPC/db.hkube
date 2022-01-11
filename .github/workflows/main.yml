@@ -25,10 +25,11 @@ jobs:
             - uses: actions/setup-node@v1
               with:
                   node-version: 14.x
+
+            - run: npm ci
             - name: setup
               run: |
-                  docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=tester -e MONGO_INITDB_ROOT_PASSWORD=password mongo:4.4.1-bionic
-            - run: npm ci
+                  npm run start:mongo
             - name: lint and test
               run: |
                   npm run lint

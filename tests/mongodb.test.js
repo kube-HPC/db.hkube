@@ -25,22 +25,6 @@ describe('Collection', () => {
                 /invalid config/i
             );
         });
-        it('should throw missing user name', async () => {
-            await expect(
-                connect({ auth: { password: 'a' } })
-            ).to.be.rejectedWith(/you did not provide user/i);
-        });
-        it('should throw missing password', async () => {
-            await expect(connect({ auth: { user: 'a' } })).to.be.rejectedWith(
-                /you did not provide password/i
-            );
-        });
-        it('should throw Authentication failed', async () => {
-            const promise = connect({
-                user: 'no_such_user',
-            });
-            await expect(promise).to.be.rejectedWith(/Authentication failed/i);
-        });
         it.skip('should throw ENOTFOUND', async () => {
             const promise = connect({
                 host: 'no_such_host',
@@ -51,6 +35,7 @@ describe('Collection', () => {
         it('should throw ECONNREFUSED', async () => {
             const promise = connect({
                 port: 9999,
+                connectionMethod: 'mongodb',
                 serverSelectionTimeoutMS: 500,
             });
             await expect(promise).to.be.rejectedWith(/connect ECONNREFUSED/i);
@@ -66,7 +51,7 @@ describe('Collection', () => {
                 /Server selection timed out/i
             );
         });
-        it('should bootstrap MongoDB connection amd disconnect', async () => {
+        it('should bootstrap MongoDB connection and disconnect', async () => {
             const db = await connect();
             expect(db.isConnected).to.be.true;
             await db.close();

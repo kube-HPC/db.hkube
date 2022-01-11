@@ -20,6 +20,8 @@ const connect = async (config = {}, provider = undefined, createIndices = false)
                 },
                 host: config.host || process.env.DB_HOST,
                 port: config.port || parseInt(process.env.DB_PORT, 10),
+                connectionMethod: config.connectionMethod || process.env.MONGODB_CONNECTION_METHOD,
+                tls: config.tls || "false",
                 dbName: process.env.DB_NAME,
                 ...config,
             },

@@ -358,6 +358,40 @@ describe('Jobs', () => {
             expect(oldInactiveJobs).to.have.lengthOf(2);
         });
     });
+    describe('Watch', () => {
+        it('should watch on job status', async () => {
+            let resolveStatus;
+            const promiseStatus = new Promise((res) => { resolveStatus = res; });
+
+            const job = generateJob();
+            await db.jobs.create(job);
+            const { jobId } = job;
+
+            await db.jobs.watchStatus({}, (job) => {
+                resolveStatus(job);
+            });
+
+            await db.jobs.updateStatus({ jobId, status: 'completed' });
+            const status = await promiseStatus;
+            expect(status.status).to.eql('completed');
+        });
+        it('should watch on job result', async () => {
+            let resolveResult;
+            const promiseResult = new Promise((res) => { resolveResult = res; });
+
+            const job = generateJob();
+            await db.jobs.create(job);
+            const { jobId } = job;
+
+            await db.jobs.watchResult({ jobId }, (job) => {
+                resolveResult(job);
+            });
+
+            await db.jobs.updateResult({ jobId, data: { res: 42 } });
+            const result = await promiseResult;
+            expect(result.data.res).to.eql(42);
+        });
+    });
     describe('Pagination', () => {
         before(async () => {
             const numOfJobs = 200;
