@@ -22,8 +22,9 @@ describe('Tasks', () => {
     });
     it('should create and fetch task', async () => {
         const task = generateTask();
+        const { taskId, jobId } = task;
         const res1 = await db.tasks.create(task);
-        const res2 = await db.tasks.fetch({ taskId: task.taskId });
+        const res2 = await db.tasks.fetch({ taskId, jobId });
         expect(res1).to.eql(res2);
     });
     it('should update many tasks status', async () => {
