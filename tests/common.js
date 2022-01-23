@@ -102,6 +102,10 @@ const generatePipeline = ({ startTime, experimentName, pipelineType } = {}) => (
     options: {
         batchTolerance: 30,
         progressVerbosityLevel: 'debug',
+        concurrentPipelines: {
+            amount: 5,
+            rejectOnFailure: false
+        }
     },
     triggers: {
         pipelines: ['a', 'b', 'c'],

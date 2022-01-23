@@ -171,6 +171,22 @@ describe('Jobs', () => {
             expect(response).to.have.lengthOf(1);
             expect(response[0]).to.eql(jobData);
         });
+        it('should search running job by concurrency', async () => {
+            const job = generateJob();
+            const { result, ...jobData } = job;
+            await db.jobs.create(jobData);
+            const response = await db.jobs.search({
+                pipelineType: 'stored',
+                isConcurrencyReject: false,
+                hasResult: false,
+                fields: {
+                    name: 'pipeline.name',
+                    amount: 'pipeline.options.concurrentPipelines.amount',
+                }
+            });
+            expect(response[0]).to.have.property('name');
+            expect(response[0]).to.have.property('amount');
+        });
         it('should search jobs with non existing', async () => {
             const job = generateJob();
             const { experimentName, name: pipelineName } = job.pipeline;
