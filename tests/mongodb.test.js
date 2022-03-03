@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const uuid = require('uuid').v4;
 const DBConnection = require('./../');
 const connect = require('./connect');
-const { ObjectID } = require('mongodb');
+const { ObjectID, MongoError } = require('mongodb');
 const { generateEntries } = require('./common');
 // a valid mongo ObjectID;
 const nonExistingId = new ObjectID().toHexString();
@@ -209,4 +209,14 @@ describe('Collection', () => {
             });
         });
     });
+
+    describe('isFatal', () => {
+        it('is fatal', async () => {
+            const db = await connect();
+            expect(db.isFatal(new Error())).to.eql(false);
+            expect(db.isFatal(new MongoError('dd'))).to.eql(true);
+        });
+    });
+
+
 });
