@@ -71,6 +71,21 @@ describe('Tasks', () => {
         const res2 = await db.tasks.fetchAll({ query: { cpu: cpu2 } });
         expect(res.modified).to.eql(res2.length);
     });
+    it('should update or replace many', async () => {
+        const jobId = uuid();
+        const task1 = generateTask({ jobId });
+        const task2 = generateTask({ jobId });
+        let res = await db.tasks.createOrReplaceMany([task1, task2]);
+        expect(res.upsertedCount).to.eq(2);
+        res = await db.tasks.fetchAll({ query: { jobId } });
+        expect(res.length).to.eql(2);
+        task1['status'] = 'completed';
+        res = await db.tasks.createOrReplaceMany([task1]);
+        expect(res.matchedCount).to.eq(1);
+        res = await db.tasks.fetchAll({ query: { taskId: task1.taskId } });
+        expect(res[0].status).to.eq('completed');
+
+    });
     it('should create and update task', async () => {
         const task = generateTask();
         const status = 'completed';
