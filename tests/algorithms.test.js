@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
+const connect = require('./connect');
 const {
     generateAlgorithm,
     generateVersion,
@@ -9,8 +10,14 @@ const {
 
 let db = null;
 describe('Algorithms', () => {
-    before(async () => {
-        db = global.testParams.db;
+
+    beforeEach(async () => {
+        db = await connect();
+        await db.db.dropDatabase();
+        await db.init({ createIndices: true });
+        global.testParams = {
+            db
+        }
     });
     it('should not throw error itemNotFound', async () => {
         const algorithm = generateAlgorithm();
@@ -166,6 +173,29 @@ describe('Algorithms', () => {
             readme: 0
         });
 
+
+    });
+    it('should search using cursor', async () => {
+        const algorithm1 = generateAlgorithm({ name: `alg-green-${uuid()}` });
+        const algorithm2 = generateAlgorithm({ name: `alg-blue-${uuid()}` });
+        const algorithm3 = generateAlgorithm({ name: `alg-green-${uuid()}` });
+        const algorithm4 = generateAlgorithm({ name: `alg-green-${uuid()}` });
+        await db.algorithms.create(algorithm1);
+        await db.algorithms.create(algorithm2);
+        await db.algorithms.create(algorithm3);
+        await db.algorithms.create(algorithm4);
+        const result1 = await db.algorithms.searchApi({
+            limit: 2,
+            name: 'green',
+        });
+        expect(result1.cursor).exist
+        expect(result1.hits.length).to.eq(2);
+        const result2 = await db.algorithms.searchApi({
+            limit: 2,
+            name: 'green',
+            cursor: result1.cursor
+        });
+        expect(result2.hits.length).to.eq(1);
 
     });
     it('should create and search algorithms', async () => {
