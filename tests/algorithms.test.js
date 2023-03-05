@@ -133,7 +133,7 @@ describe('Algorithms', () => {
         const res = await db.algorithms.delete({ name: algorithm.name });
         expect(res).to.eql({
             algorithms: 1,
-    //        versions: 2,
+            versions: 2,
             builds: 2,
             readme: 1,
         });
@@ -157,7 +157,7 @@ describe('Algorithms', () => {
         const res = await db.algorithms.delete({ name: algorithm.name, kind: 'debug' });
         expect(res).to.eql({
             algorithms: 1,
-        //    versions: 2,
+            versions: 2,
             builds: 2,
             readme: 1,
         });
