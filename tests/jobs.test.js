@@ -428,6 +428,30 @@ describe('Jobs', () => {
             });
             await expect(promise).to.be.rejectedWith(/please provide a valid cursor/i);
         });
+        it('should search with job by jobId', async () => {
+          
+            const job = generateJob();
+            await db.jobs.create(job);
+            const { jobId , pipeline } = job;
+   
+            const res = await db.jobs.searchApi({
+                query: {
+                    pipelineName: jobId
+                },
+               
+            });
+
+            const res2 = await db.jobs.searchApi({
+                query: {
+                    pipelineName: pipeline.name
+                },
+               
+            });
+   
+            expect(res.hits[0].jobId).to.eql(jobId);
+            expect(res2.hits[0].pipeline.name).to.eql(pipeline.name);
+
+        });
         it('should search with dates range of one hour', async () => {
             const hour = 60;
             const res = await db.jobs.searchApi({
