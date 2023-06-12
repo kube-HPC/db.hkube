@@ -448,6 +448,8 @@ describe('Jobs', () => {
                
             });
    
+            expect(res.hits.length).to.eql(1);
+            expect(res2.hits.length).to.eql(1);
             expect(res.hits[0].jobId).to.eql(jobId);
             expect(res2.hits[0].pipeline.name).to.eql(pipeline.name);
 
