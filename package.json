@@ -14,7 +14,7 @@
     "author": "Hkube",
     "license": "ISC",
     "dependencies": {
-        "@hkube/consts": "^1.0.40",
+        "@hkube/consts": "^1.0.59",
         "lodash.clonedeep": "^4.5.0",
         "lodash.merge": "^4.6.2",
         "moment": "^2.29.1",
