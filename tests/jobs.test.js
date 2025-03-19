@@ -1,10 +1,10 @@
-const { pipelineStatuses } = require('@hkube/consts');
+const { pipelineStatuses, executeActions } = require('@hkube/consts');
 const { expect } = require('chai');
 const { promisify } = require('util');
 const cloneDeep = require('lodash.clonedeep');
 const { v4: uuid } = require('uuid');
 const { doneStatus } = require('./../lib/MongoDB/Jobs');
-const { generateJob, generateDataSourceJob, generateGraph } = require('./common');
+const { generateJob, generateDataSourceJob, generateGraph, generateAudit } = require('./common');
 let db = null;
 const sleep = promisify(setTimeout);
 
@@ -372,6 +372,30 @@ describe('Jobs', () => {
                 inactiveTime: sleepDuration * 2,
             });
             expect(oldInactiveJobs).to.have.lengthOf(2);
+        });
+        it('should create job with audit trail', async () => {
+            const jobData = generateJob();
+            let { status, ...job } = jobData;
+            const { jobId } = job;
+            const level = 'info';
+            await db.jobs.create(jobData);
+            let res = await db.jobs.fetch({ jobId });
+            expect(res.auditTrail[0]).to.have.property("action").that.eql("run");
+        });
+        it('should update audit trail', async () => {
+            const jobData = generateJob();
+            let { status, ...job } = jobData;
+            const { jobId } = job;
+            const level = 'info';
+            await db.jobs.create(jobData);
+            const auditEntry = generateAudit(executeActions.PAUSE);
+            await db.jobs.updateStatus({
+                jobId: jobId,
+                status: status,
+                auditEntry
+            });
+            const res = await db.jobs.fetch({ jobId });
+            expect(res.auditTrail[0]).to.have.property("action").that.eql("pause");
         });
     });
     describe('Watch', () => {

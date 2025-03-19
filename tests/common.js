@@ -1,6 +1,6 @@
 const uuid = require('uuid').v4;
 const { dummyFile } = require('./mocks');
-const { devenvTypes } = require('@hkube/consts');
+const { devenvTypes, executeActions } = require('@hkube/consts');
 const generateAlgorithm = options => ({
     name: options?.name || `alg-${uuid()}`,
     algorithmImage: `hkube/algorithm-${uuid()}`,
@@ -173,8 +173,9 @@ const generateStatus = (useUnixTime = false, pipeline, status) => ({
             preschedule: 2,
         },
         details: '0% completed, 5 creating, 2 preschedule',
-    },
+    }
 });
+
 
 const generateResult = (useUnixTime = false) => ({
     timestamp: useUnixTime ? Date.now() : new Date().toUTCString(),
@@ -188,14 +189,21 @@ const generateResult = (useUnixTime = false) => ({
     timeTook: 2163.044,
 });
 
-const generateJob = ({ useUnixTime, pipeline, status, experimentName, startTime, pipelineType, number = 1 } = {}) => ({
+const generateJob = ({ useUnixTime, pipeline, status, experimentName, startTime, pipelineType, number = 1} = {}) => ({
     jobId: `jobId-${uuid()}`,
     number,
     pipeline: generatePipeline({ startTime, experimentName, pipelineType }),
     graph: generateGraph(),
     status: generateStatus(useUnixTime, pipeline, status),
     result: generateResult(useUnixTime),
+    auditTrail: [generateAudit(executeActions.RUN)]
 });
+
+const generateAudit = ( action = executeActions.RESUME) => ({
+    timestamp: Date.now(),
+    user: 'defaultUser',
+    action
+})
 
 const generateExperiment = () => ({
     name: uuid(),
@@ -378,5 +386,6 @@ module.exports = {
     generateDataSourceJob,
     generateEntries,
     generateMockFiles,
-    generateDevenv
+    generateDevenv,
+    generateAudit
 };
