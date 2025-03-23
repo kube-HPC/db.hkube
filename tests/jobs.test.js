@@ -36,6 +36,13 @@ describe('Jobs', () => {
             const res = await db.jobs.fetchStatus({ jobId });
             expect(res).to.eql({ jobId, ...job.status });
         });
+        it('should create and fetch auditTrail', async () => {
+            const job = generateJob();
+            const { jobId } = job;
+            await db.jobs.create(job);
+            const res = await db.jobs.fetchAuditTrail({ jobId });
+            expect(res).to.eql({ jobId, ...job.auditTrail });
+        });
         it('should create and fetch result', async () => {
             const job = generateJob();
             const { jobId } = job;
