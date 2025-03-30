@@ -485,6 +485,41 @@ describe('Jobs', () => {
             expect(res2.hits[0].pipeline.name).to.eql(pipeline.name);
 
         });
+        it('should search with user', async () => {
+            const res = await db.jobs.searchApi({
+                limit: 10,
+                query: {
+                    user: "defaultUser"
+                },
+               
+            });
+            expect(res.hits.length).to.eql(10);
+            expect(res.hits[6].auditTrail[0].action).to.eql(executeActions.RUN);
+        });
+        it('should search with user and an action other then default', async () => {
+            const jobData = generateJob();
+            let { status, ...job } = jobData;
+            const { jobId } = job;
+            const level = 'info';
+            await db.jobs.create(jobData);
+            const auditEntry = generateAudit(executeActions.PAUSE);
+            await db.jobs.updateStatus({
+                jobId: jobId,
+                status: status,
+                auditEntry
+            });
+            const res = await db.jobs.searchApi({
+                limit: 10,
+                query: {
+                    user: "defaultUser",
+                    action: executeActions.PAUSE
+                },
+               
+            });
+            expect(res.hits.length).to.be.gte(1);
+            expect(res.hits[0].auditTrail[0].action).to.eql(executeActions.PAUSE);
+            expect(res.hits[0].auditTrail[1].action).to.eql(executeActions.RUN);
+        });
         it('should search with dates range of one hour', async () => {
             const hour = 60;
             const res = await db.jobs.searchApi({
