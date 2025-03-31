@@ -404,6 +404,57 @@ describe('Jobs', () => {
             const res = await db.jobs.fetch({ jobId });
             expect(res.auditTrail[0]).to.have.property("action").that.eql("pause");
         });
+        it('should search with user and find multiple', async () => {
+            const job1 = generateJob();
+            job1.auditTrail[0].user = "specificUser";
+            const job2 = generateJob();
+            job2.auditTrail[0].user = "specificUser";
+            await db.jobs.create(job1);
+            await db.jobs.create(job2);
+            const res = await db.jobs.searchApi({
+                query: {
+                    user: "specificUser"
+                },
+               
+            });
+            expect(res.hits.length).to.eql(2);
+        });
+        it('should search with specific user and verify default query action', async () => {
+            const job = generateJob();
+            job.auditTrail[0].user = "firstInvoker";
+            await db.jobs.create(job);
+            const res = await db.jobs.searchApi({
+                query: {
+                    user: "firstInvoker"
+                },
+               
+            });
+            expect(res.hits[0].auditTrail[0].action).to.eql(executeActions.RUN);
+        });
+        it('should search with user and an action other then default', async () => {
+            const jobData = generateJob();
+            let { status, ...job } = jobData;
+            const { jobId } = job;
+            const level = 'info';
+            jobData.auditTrail[0].user = "pauseInvoker";
+            await db.jobs.create(jobData);
+            const auditEntry = generateAudit(executeActions.PAUSE);
+            auditEntry.user = "pauseInvoker";
+            await db.jobs.updateStatus({
+                jobId: jobId,
+                status: status,
+                auditEntry
+            });
+            const res = await db.jobs.searchApi({
+                query: {
+                    user: "pauseInvoker",
+                    action: executeActions.PAUSE
+                },
+               
+            });
+            expect(res.hits[0].auditTrail[0].action).to.eql(executeActions.PAUSE);
+            expect(res.hits[0].auditTrail[1].action).to.eql(executeActions.RUN);
+        });
     });
     describe('Watch', () => {
         it('should watch on job status', async () => {
