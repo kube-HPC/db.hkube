@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const { generateAlgorithm, generateVersion } = require('./common');
+const { errorTypes } = require('../lib/errors');
 let db = null;
 
 describe('Versions', () => {
@@ -125,5 +126,25 @@ describe('Versions', () => {
         expect(res1).to.eql(version);
         expect(res2).to.eql({ deleted: 1 });
         expect(response).to.be.null;
+    });
+    it('should throw error itemNotFound for algorithm', async () => {
+        const version = generateVersion("no_such_algorithm");
+        version.version = 'no_such_version';
+        try {
+        const res1 = await db.algorithms.versions.update(version);
+        }
+        catch (error) {
+        expect(error.type).to.be.eql(errorTypes.NOT_FOUND);
+        }
+    });
+        it('should throw error itemNotFound for pipeline', async () => {
+        const version = generateVersion("no_such_algorithm");
+        version.version = 'no_such_version';
+        try {
+        const res1 = await db.pipelines.versions.update(version);
+        }
+        catch (error) {
+        expect(error.type).to.be.eql(errorTypes.NOT_FOUND);
+        }
     });
 });
