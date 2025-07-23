@@ -135,6 +135,7 @@ describe('Versions', () => {
         }
         catch (error) {
         expect(error.type).to.be.eql(errorTypes.NOT_FOUND);
+        expect(error.metaData.entityType).to.be.eql('version');
         }
     });
         it('should throw error itemNotFound for pipeline', async () => {
