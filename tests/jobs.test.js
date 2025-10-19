@@ -646,6 +646,68 @@ describe('Jobs', () => {
             expect(res2.hits[0].number).to.eql(190);
             expect(res2.hits[limit - 1].number).to.eql(181);
         });
+        it('should search with single tag', async () => {
+            const tags = [uuid(8)];
+            const job = generateJob({ tags });
+            await db.jobs.create(job);
+
+            const request = {
+                query: {
+                    tags
+                },
+                sort: 'desc',
+                fields: {
+                    jobId: true,
+                    pipeline: true
+                }
+            }
+            const res = await db.jobs.searchApi({
+                ...request,
+            });
+            expect(res.hits).to.have.lengthOf(1);
+            expect(res.hits[0].pipeline.tags).to.deep.equal(tags);
+        });
+        it('should search with multiple tags & jobs', async () => {
+            const tags1 = [uuid(8)];
+            const tags2 = [uuid(8), uuid(8)];
+            const job1 = generateJob({ tags: tags1 });
+            const job2 = generateJob({ tags: tags2 });
+            await db.jobs.create(job1);
+            await db.jobs.create(job2);
+
+            const request = {
+                query: {
+                    tags: [...tags1, tags2[0]]
+                },
+                sort: 'desc',
+                fields: {
+                    jobId: true,
+                    pipeline: true
+                }
+            }
+            const res = await db.jobs.searchApi({
+                ...request,
+            });
+            expect(res.hits).to.have.lengthOf(2);
+            const hitTags = res.hits.map(hit => hit.pipeline.tags);
+            expect(hitTags).to.deep.include.members([tags1, tags2]);
+        });
+        it('should return empty on non-matching tags', async () => {
+            const request = {
+                query: {
+                    tags: ['non-existing-tag1', 'non-existing-tag2']
+                },
+                sort: 'desc',
+                fields: {
+                    jobId: true,
+                    pipeline: true
+                }
+            }
+            const res = await db.jobs.searchApi({
+                ...request,
+            });
+            expect(res.hits).to.have.lengthOf(0);
+        });
     });
     describe('handle large collection', () => {
         before(async () => {
