@@ -667,6 +667,54 @@ describe('Jobs', () => {
             expect(res.hits).to.have.lengthOf(1);
             expect(res.hits[0].pipeline.tags).to.deep.equal(tags);
         });
+        it('should support prefix search on pipelineName via searchByPrefix', async () => {
+            // create jobs with pipeline names that share a prefix
+            const jobA = generateJob();
+            jobA.pipeline.name = 'simple';
+            const jobB = generateJob();
+            jobB.pipeline.name = 'simpler1';
+            const jobC = generateJob();
+            jobC.pipeline.name = 'other';
+            await db.jobs.create(jobA);
+            await db.jobs.create(jobB);
+            await db.jobs.create(jobC);
+
+            const res = await db.jobs.searchApi({
+                query: {
+                    pipelineName: 'simple'
+                },
+            }, true);
+
+            const names = res.hits.map(h => h.pipeline.name).sort();
+            expect(names).to.include.members(['simple', 'simpler1']);
+        });
+
+        it('should support prefix search on algorithmName via searchByPrefix', async () => {
+            // create jobs with algorithm names that share a prefix
+            const jobA = generateJob();
+            jobA.pipeline.nodes[0].algorithmName = 'green-alg';
+            const jobB = generateJob();
+            jobB.pipeline.nodes[1].algorithmName = 'green-alg-extra';
+            const jobC = generateJob();
+            jobC.pipeline.nodes[0].algorithmName = 'other-alg';
+            await db.jobs.create(jobA);
+            await db.jobs.create(jobB);
+            await db.jobs.create(jobC);
+
+            const res = await db.jobs.searchApi({
+                query: {
+                    algorithmName: 'green-alg'
+                },
+            }, true);
+
+            const algs = res.hits.map(h => {
+                // find any algorithm names in nodes that start with the prefix
+                return h.pipeline.nodes.map(n => n.algorithmName).flat();
+            }).flat();
+            // there should be at least the two green-alg matches
+            expect(algs.some(a => a === 'green-alg')).to.be.true;
+            expect(algs.some(a => a === 'green-alg-extra')).to.be.true;
+        });
         it('should search with multiple tags & jobs', async () => {
             const tags1 = [uuid(8)];
             const tags2 = [uuid(8), uuid(8)];
