@@ -689,6 +689,28 @@ describe('Jobs', () => {
             expect(names).to.include.members(['simple', 'simpler1']);
         });
 
+        it('should support prefix search on pipelineName via searchByPrefix in count', async () => {
+            // create jobs with pipeline names that share a prefix
+            const jobA = generateJob();
+            jobA.pipeline.name = 'simple';
+            const jobB = generateJob();
+            jobB.pipeline.name = 'simpler1';
+            const jobC = generateJob();
+            jobC.pipeline.name = 'other';
+            await db.jobs.create(jobA);
+            await db.jobs.create(jobB);
+            await db.jobs.create(jobC);
+
+            const res = await db.jobs.count({
+                query: {
+                    pipelineName: 'simple'
+                },
+            }, true);
+
+            // Should count both 'simple' and 'simpler1'
+            expect(res).to.equal(2);
+        });
+
         it('should support prefix search on algorithmName via searchByPrefix', async () => {
             // create jobs with algorithm names that share a prefix
             const jobA = generateJob();
