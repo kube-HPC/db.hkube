@@ -60,7 +60,10 @@ jobs:
             - uses: actions/setup-node@v4 # Use v4 for OIDC support
               with:
                   node-version: 20 # Use a modern Node version
-
+                  registry-url: https://registry.npmjs.org
+                  scope: '@hkube'
+            - name: Enable provenance
+              run: npm config set provenance true
             - name: Publish to npm
               # No NPM_TOKEN env needed here, OIDC handles it via registry-url
-              run: npm publish --provenance --access public --loglevel verbose
+              run: npm publish --access public --loglevel verbose
