@@ -42,6 +42,10 @@ jobs:
         if: github.ref == 'refs/heads/main'
         needs: test
         runs-on: ubuntu-latest
+        #Needed for OIDC - Npm repo publishing
+        permissions:
+            id-token: write
+            contents: write
         steps:
             - uses: actions/checkout@v2
             - name: setup git
@@ -56,9 +60,6 @@ jobs:
             - uses: actions/setup-node@v1
               with:
                   node-version: 14
-            - name: Publish
-              run: |
-                  npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-                  npm publish --ignore-scripts
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Publish to npm
+                # --provenance links the build to this GitHub Action run
+              run: npm publish --provenance --access public
