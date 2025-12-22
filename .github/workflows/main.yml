@@ -57,9 +57,11 @@ jobs:
                   git checkout -f -b version-branch
                   npm version patch --no-commit-hooks -m "$(git log -1 --pretty=%B) .... bump version [skip ci]"
                   git push origin version-branch:main --follow-tags
-            - uses: actions/setup-node@v1
+            - uses: actions/setup-node@v4 # Use v4 for OIDC support
               with:
-                  node-version: 14
+                  node-version: 20 # Use a modern Node version
+                  registry-url: 'https://registry.npmjs.org'
+
             - name: Publish to npm
-                # --provenance links the build to this GitHub Action run
-              run: npm publish --provenance --access public
+              # No NPM_TOKEN env needed here, OIDC handles it via registry-url
+              run: npm publish --provenance --access public 
