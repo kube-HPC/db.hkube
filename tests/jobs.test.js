@@ -689,6 +689,28 @@ describe('Jobs', () => {
             expect(names).to.include.members(['simple', 'simpler1']);
         });
 
+        it('should support prefix search on pipelineName via searchByPrefix in count', async () => {
+            // create jobs with pipeline names that share a prefix
+            const jobA = generateJob();
+            jobA.pipeline.name = 'countsimple';
+            const jobB = generateJob();
+            jobB.pipeline.name = 'countsimpler1';
+            const jobC = generateJob();
+            jobC.pipeline.name = 'other';
+            await db.jobs.create(jobA);
+            await db.jobs.create(jobB);
+            await db.jobs.create(jobC);
+
+            const res = await db.jobs.count({
+                query: {
+                    pipelineName: 'count'
+                },
+            }, true);
+
+            // Should count both 'simple' and 'simpler1'
+            expect(res).to.equal(2);
+        });
+
         it('should support prefix search on algorithmName via searchByPrefix', async () => {
             // create jobs with algorithm names that share a prefix
             const jobA = generateJob();
@@ -714,6 +736,30 @@ describe('Jobs', () => {
             // there should be at least the two green-alg matches
             expect(algs.some(a => a === 'green-alg')).to.be.true;
             expect(algs.some(a => a === 'green-alg-extra')).to.be.true;
+        });
+
+        it('should support prefix search on algorithmName via searchByPrefix in count', async () => {
+            // Remove all jobs to avoid interference
+            await db.jobs.collection.deleteMany({});
+            // create jobs with algorithm names that share a prefix
+            const jobA = generateJob();
+            jobA.pipeline.nodes[0].algorithmName = 'count-green-alg';
+            const jobB = generateJob();
+            jobB.pipeline.nodes[1].algorithmName = 'count-green-alg-extra';
+            const jobC = generateJob();
+            jobC.pipeline.nodes[0].algorithmName = 'other-alg';
+            await db.jobs.create(jobA);
+            await db.jobs.create(jobB);
+            await db.jobs.create(jobC);
+
+            const res = await db.jobs.count({
+                query: {
+                    algorithmName: 'count-green-alg'
+                },
+            }, true);
+
+            // Should count both 'count-green-alg' and 'count-green-alg-extra'
+            expect(res).to.equal(2);
         });
         it('should search with multiple tags & jobs', async () => {
             const tags1 = [uuid(8)];
