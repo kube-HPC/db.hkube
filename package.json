@@ -1,13 +1,12 @@
 {
     "name": "@hkube/db",
-    "version": "2.0.24",
+    "version": "2.0.25",
     "description": "db api for HKube",
     "main": "index.js",
     "repository": {
-    "type": "git",
-    "url": "https://github.com/kube-HPC/db.hkube.git"
+        "type": "git",
+        "url": "https://github.com/kube-HPC/db.hkube.git"
     },
-    
     "scripts": {
         "lint": "eslint .",
         "start:mongo": "./scripts/startMongo.sh",
