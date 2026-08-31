@@ -366,6 +366,18 @@ const generateMockFiles = (amount = 4) =>
         uploadedAt: new Date().getTime(),
     }));
 
+const generateUserPreferences = (overrides = {}) => ({
+    userName: overrides.userName || `device-${uuid()}`,
+    theme: overrides.theme || 'light',
+    scoopIntervalHours: overrides.scoopIntervalHours || 24,
+    tables: overrides.tables || {
+        jobs: { columns: {} },
+        algorithms: { columns: {} },
+        pipelines: { columns: {} },
+    },
+    updatedAt: overrides.updatedAt || new Date().toISOString(),
+});
+
 module.exports = {
     generateAlgorithm,
     generateTask,
@@ -388,5 +400,6 @@ module.exports = {
     generateEntries,
     generateMockFiles,
     generateDevenv,
-    generateAudit
+    generateAudit,
+    generateUserPreferences,
 };
