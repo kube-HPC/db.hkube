@@ -367,7 +367,7 @@ const generateMockFiles = (amount = 4) =>
     }));
 
 const generateUserPreferences = (overrides = {}) => ({
-    userName: overrides.userName || `device-${uuid()}`,
+    userName: overrides.userName || uuid(),
     theme: overrides.theme || 'light',
     scoopIntervalHours: overrides.scoopIntervalHours || 24,
     tables: overrides.tables || {
